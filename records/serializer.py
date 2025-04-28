@@ -19,3 +19,11 @@ class DeathRecordSerializer(serializers.ModelSerializer):
             'user': {'required': False},
         }
         read_only_fields = ['user','id']
+
+class BirthRecordCertificateSerializer(serializers.Serializer):
+    signature= serializers.CharField()
+    birth_record = BirthRecordSerializer()
+
+class DethRecordCertificateSerializer(serializers.Serializer):
+    signature= serializers.CharField()
+    deth_record = DeathRecordSerializer()

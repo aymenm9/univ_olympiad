@@ -27,7 +27,7 @@ class DeathRecord(models.Model):
     date_of_deth = models.DateField()
     sex = models.CharField(max_length=10, choices=[
         ('men','men'), ('female','female')], default='men')
-    death_cause = models.CharField(max_length=10,null=True)
+    death_cause = models.CharField(null=True)
     age = models.IntegerField(default=0)
     father_name = models.CharField(max_length=100)
     mother_name = models.CharField(max_length=100)
@@ -54,7 +54,8 @@ def encrypt_data(sender, instance, **kwargs):
 
 @receiver(pre_save, sender=DeathRecord)
 def encrypt_data(sender, instance, **kwargs):
-    key = instance.nuber_of_birth if instance.nuber_of_birth else b'9999'
+    load_dotenv()
+    key = os.getenv('FERNET_KEY')
     fernet = Fernet(key)
     instance.first_name = fernet.encrypt(instance.first_name.encode()).decode()
     instance.last_name = fernet.encrypt(instance.last_name.encode()).decode()
