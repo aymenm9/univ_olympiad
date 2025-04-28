@@ -22,8 +22,8 @@ class DeathRecordSerializer(serializers.ModelSerializer):
 
 class BirthRecordCertificateSerializer(serializers.Serializer):
     signature= serializers.CharField()
-    birth_record = BirthRecordSerializer()
+    record = BirthRecordSerializer()
 
 class DethRecordCertificateSerializer(serializers.Serializer):
     signature= serializers.CharField()
-    deth_record = DeathRecordSerializer()
+    record = DeathRecordSerializer()

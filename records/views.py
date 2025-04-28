@@ -106,7 +106,7 @@ class Death_certificate(APIView):
             digital_signature+=obj.mother_name
             digital_signature = make_password(digital_signature)
             data = DeathRecordSerializer(obj)
-            return Response({'signature':digital_signature,'deth_record':data.data}, status=status.HTTP_200_OK)
+            return Response({'signature':digital_signature,'record':data.data}, status=status.HTTP_200_OK)
 
 
 class Birth_certificate(APIView):
@@ -137,4 +137,23 @@ class Birth_certificate(APIView):
             digital_signature+=obj.mother_name
             digital_signature = make_password(digital_signature)
             data = BirthRecordSerializer(obj)
-            return Response({'signature':digital_signature,'deth_record':data.data}, status=status.HTTP_200_OK)
+            return Response({'signature':digital_signature,'record':data.data}, status=status.HTTP_200_OK)
+
+from .gen import generate
+
+class AiView(APIView):
+    permission_classes = [IsAuthenticated, IsHospital]
+    @extend_schema(
+        request=None,
+        responses={200: str},
+        description="Generate a death certificate PDF for the given nuber_of_birth.",
+    )
+    def get(self,request):
+        try:
+
+            death_record = DeathRecord.objects.all()
+        except DeathRecord.DoesNotExist:
+            return Response({"error": "Death record not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        data = generate(death_record)
+        return Response(data, status=status.HTTP_200_OK)
