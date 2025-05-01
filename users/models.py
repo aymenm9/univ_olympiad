@@ -1,16 +1,67 @@
+from django.contrib.auth.models import User
 from django.db import models
-from django.contrib.auth.models import AbstractUser
-
-# Create your models here.
-class User(AbstractUser):
-    role = models.CharField(max_length=10, choices=[('hospital','Hospital'),('DSP','DSP'),('APC','APC'),('admin','admin')], default='hospital')
 
 
+class DSP(models.Model):
+    name = models.CharField(max_length=100)
+    wilaya = models.CharField(max_length=255)
+    address = models.CharField(max_length=255)
+    phone_number = models.CharField(max_length=10)
+    email = models.EmailField()
 
-from django.contrib.auth.hashers import make_password
-from django.db.models.signals import pre_save
-from django.dispatch import receiver
-@receiver(pre_save, sender=User)
-def hash_password(sender, instance, **kwargs):
-    if instance.password:
-        instance.password = make_password(instance.password)
+    def __str__(self):
+        return f'DSP of : {self.name} wilaya: {self.wilaya}'
+
+class Hospital(models.Model):
+    dsp = models.ForeignKey(DSP, on_delete=models.CASCADE, related_name='hospitals')
+    name = models.CharField(max_length=100)
+    wilaya = models.CharField(max_length=255)
+    commune = models.CharField(max_length=255)
+    address = models.CharField(max_length=255)
+    phone_number = models.CharField(max_length=10)
+    email = models.EmailField()
+
+    def __str__(self):
+        return f'Hospital of : {self.name} wilaya: {self.wilaya} commune: {self.commune}'
+
+class APC(models.Model):
+    dsp = models.ForeignKey(DSP, on_delete=models.CASCADE, related_name='apcs')
+    name = models.CharField(max_length=100)
+    wilaya = models.CharField(max_length=255)
+    commune = models.CharField(max_length=255)
+    address = models.CharField(max_length=255)
+    phone_number = models.CharField(max_length=10)
+    email = models.EmailField()
+
+    def __str__(self):
+        return f'APC of : {self.name} wilaya: {self.wilaya} commune: {self.commune}'
+
+class UserInfo(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='info')
+    Organization = models.CharField(choices=[
+        ('Hospital','Hospital'),
+        ('DSP','DSP'),
+        ('APC','APC')
+    ], max_length=50, default='Hospital')
+    hospital = models.ForeignKey(Hospital, on_delete=models.SET_NULL, null=True, blank=True, related_name='employees')
+    dsp = models.ForeignKey(DSP, on_delete=models.SET_NULL, null=True, blank=True, related_name='employees')
+    apc = models.ForeignKey(APC, on_delete=models.SET_NULL, null=True, blank=True, related_name='employees')
+    role = models.CharField(choices=[
+        ('Admin', 'Admin'),
+        ('Worker', 'Worker'),
+        ('Guest', 'Guest'),
+    ], max_length=20, default='Guest')
+
+    def __str__(self):
+        org_name =''
+        if self.Organization == 'Hospital':
+            org_name = self.hospital.name
+        elif self.Organization == 'DSP':
+            org_name = self.dsp.name
+        elif self.Organization == 'APC':
+            org_name = self.apc.name
+        
+        return f'{self.user.username} - {self.role} - {self.Organization} - {org_name}'
+    
+
+
