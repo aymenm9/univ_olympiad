@@ -14,3 +14,8 @@ class LoginSerializer(serializers.Serializer):
     user = UserSerializer
     access = serializers.CharField()
     refresh = serializers.CharField()
+
+
+class chatHistorySerializer(serializers.Serializer):
+
+    message = serializers.CharField()

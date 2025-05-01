@@ -14,3 +14,11 @@ from django.dispatch import receiver
 def hash_password(sender, instance, **kwargs):
     if instance.password:
         instance.password = make_password(instance.password)
+
+
+class ChatHistory(models.Model):
+    user = models.OneToOneField( 'users.User', on_delete=models.CASCADE, related_name='chat_history')
+    msg = models.JSONField(default=list)
+
+    def __str__(self):
+        return f'{self.user}, {self.msg}'

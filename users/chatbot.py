@@ -1,40 +1,47 @@
-import base64
-import os
-from dotenv import load_dotenv
+import json
 from google import genai
 from google.genai import types
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
-
-def generate(deths)->str:
-    load_dotenv()
+def chatbot(message:str,chat_history:list = []):
     client = genai.Client(
         api_key=os.environ.get("GEMINI_API_KEY"),
     )
 
     model = "gemini-2.5-flash-preview-04-17"
-    text = ''
-    for death in deths:
-        text += f"""
-        [date_of_birth:{death.date_of_birth}, place_of_birth:{death.place_of_birth}, date_of_death:{death.date_of_deth}, cause_of_death:{death.death_cause}],
-        """
+    text = message
+    contents = []
+    for msg in chat_history:
+        print(msg)
+        contents.append(
+            types.Content(
+                role=msg['role'],
+                parts=[
+                    types.Part.from_text(text=msg['parts'][0]['text']),
+                ],
+            )
+        )   
     
-    contents = [
+    contents.append(
         types.Content(
             role="user",
             parts=[
                 types.Part.from_text(text=text),
             ],
         ),
-    ]
+    )
     generate_content_config = types.GenerateContentConfig(
         response_mime_type="text/plain",
         system_instruction=[
-            types.Part.from_text(text="""you will get alist of deaths records, give a short analytic summary on tham """),
+            types.Part.from_text(text="""you are a helpfull medical chatbot assistant"""),
         ],
     )
 
     responce = client.models.generate_content(
         model=model,
         contents=contents,
-        config=generate_content_config,)
+        config=generate_content_config,
+        )
     return responce.text
