@@ -6,17 +6,22 @@ from .models import UserInfo, Hospital
 class UserInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserInfo
-        fields = ['user', 'Organization', 'role']
+        fields = '__all__'
         extra_kwargs = {
             'user': {'read_only': True},
         }
 class UserSerializer(serializers.ModelSerializer):
-    user_info = serializers.SerializerMethodField()
+    user_info = UserInfoSerializer(source='info', read_only=True)
     class Meta:
         model = User
-        fields = ['id', 'username', 'password', 'email', 'first_name', 'last_name']
+        fields = ['id', 'username', 'password', 'email', 'first_name', 'last_name', 'user_info']
         extra_kwargs = {
             'password': {'write_only': True},
+            'id': {'read_only': True},
+            'email': {'required': False},
+            'first_name': {'required': False},
+            'last_name': {'required': False},
+            'organization': {'read_only': True},
         }
 
     
@@ -24,3 +29,17 @@ class LoginSerializer(serializers.Serializer):
     user = UserSerializer
     access = serializers.CharField()
     refresh = serializers.CharField()
+
+
+class hospitalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Hospital
+        fields = '__all__'
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'dsp': {'read_only': True},
+        }
+
+class CreateHospitalSerializer(serializers.Serializer):
+    hospital = hospitalSerializer()
+    password = serializers.CharField()

@@ -5,8 +5,8 @@ from users.models import Hospital
 
 
 class BirthRecord(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
-    hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE, null=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    hospital = models.ForeignKey(Hospital, on_delete=models.SET_NULL, null=True, related_name='birth_records')
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     birth_date = models.DateField()
@@ -24,7 +24,8 @@ class BirthRecord(models.Model):
     description = models.TextField()
 
 class DeathRecord(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    hospital = models.ForeignKey(Hospital, on_delete=models.SET_NULL, null=True, related_name='death_records')
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     birth_date = models.DateField()
@@ -42,6 +43,42 @@ class DeathRecord(models.Model):
     rh = models.CharField(max_length=10)
     description = models.TextField()
     age = models.IntegerField(default=0)
+    father_name = models.CharField(max_length=100)
+    mother_name = models.CharField(max_length=100)
+    birth_number = models.IntegerField()
+
+
+
+class BirthCertificate(models.Model):
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    certificate_number = models.IntegerField()
+    issue_date = models.DateField(auto_now=True)
+    issue_time = models.TimeField(auto_now=True)
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    birth_date = models.DateField()
+    birth_time = models.TimeField()
+    birth_wilaya = models.CharField(max_length=100)
+    birth_commune = models.CharField(max_length=100)
+    father_name = models.CharField(max_length=100)
+    mother_name = models.CharField(max_length=100)
+    birth_number = models.IntegerField()
+
+
+class DeathCertificate(models.Model):
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    certificate_number = models.IntegerField()
+    issue_date = models.DateField(auto_now=True)
+    issue_time = models.TimeField(auto_now=True)
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    birth_date = models.DateField()
+    death_date = models.DateField()
+    death_time = models.TimeField()
+    birth_wilaya = models.CharField(max_length=100)
+    birth_commune = models.CharField(max_length=100)
+    death_wilaya = models.CharField(max_length=100)
+    death_commune = models.CharField(max_length=100)
     father_name = models.CharField(max_length=100)
     mother_name = models.CharField(max_length=100)
     birth_number = models.IntegerField()

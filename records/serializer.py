@@ -8,7 +8,7 @@ class BirthRecordSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'user': {'required': False},
         }
-        read_only_fields = ['user','id']
+        read_only_fields = ['user','hospital','id']
 
 
 class DeathRecordSerializer(serializers.ModelSerializer):
@@ -18,12 +18,16 @@ class DeathRecordSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'user': {'required': False},
         }
+        read_only_fields = ['user','hospital','id']
+
+class BirthCertificate(serializers.ModelSerializer):
+    class Meta:
+        model = BirthRecord
+        fields = '__all__'
         read_only_fields = ['user','id']
 
-class BirthRecordCertificateSerializer(serializers.Serializer):
-    signature= serializers.CharField()
-    record = BirthRecordSerializer()
-
-class DethRecordCertificateSerializer(serializers.Serializer):
-    signature= serializers.CharField()
-    record = DeathRecordSerializer()
+class DeathCertificate(serializers.ModelSerializer):
+    class Meta:
+        model = DeathRecord
+        fields = '__all__'
+        read_only_fields = ['user','id']
