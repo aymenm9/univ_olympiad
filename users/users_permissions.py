@@ -5,7 +5,7 @@ from rest_framework import permissions
 
 class IsHospital(BasePermission):
     def has_permission(self, request, view):
-        return request.user.info.Organization == 'hospital'
+        return request.user.info.Organization == 'Hospital'
     
 class IsAPC(BasePermission):
 
@@ -19,12 +19,12 @@ class IsDSP(BasePermission):
     
 class IsDSP_Hospital(BasePermission):
     def has_permission(self, request, view):
-        return request.user.info.Organization == 'DSP' or request.user.info.Organization == 'hospital'
+        return request.user.info.Organization == 'DSP' or request.user.info.Organization == 'Hospital'
 
 
 class IsWorker(BasePermission):
     def has_permission(self, request, view):
-        return request.user.info.role == 'worker'
+        return request.user.info.role == 'Worker'
     
 class IsAdmin(permissions.BasePermission):
     def has_permission(self, request, view):

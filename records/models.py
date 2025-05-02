@@ -21,7 +21,7 @@ class BirthRecord(models.Model):
     father_name = models.CharField(max_length=100)
     mother_name = models.CharField(max_length=100)
     birth_number = models.AutoField(unique=True, primary_key=True)
-    description = models.TextField()
+    description = models.TextField(null=True, blank=True)
 
 class DeathRecord(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
@@ -41,7 +41,7 @@ class DeathRecord(models.Model):
         ('male','male'), ('female','female')], default='men')
     death_cause = models.CharField(null=True)
     rh = models.CharField(max_length=10)
-    description = models.TextField()
+    description = models.TextField(null=True, blank=True)
     age = models.IntegerField(default=0)
     father_name = models.CharField(max_length=100)
     mother_name = models.CharField(max_length=100)
@@ -85,16 +85,87 @@ class DeathCertificate(models.Model):
 
 
 
-from django.db.models.signals import pre_save
+from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 @receiver(pre_save, sender=DeathRecord)
-def clc_age(sender, instance, **kwargs):
+def clc_age_and_update_create_certificate(sender, instance, **kwargs):
     if instance.death_date and instance.birth_date:
         age = instance.death_date.year - instance.birth_date.year
         instance.age = age
     else:
         instance.age = 0
+    
+    certificate = DeathCertificate.objects.filter(birth_number=instance.birth_number).first()
+    if certificate:
+        # if it exists, update all certificate info
+        certificate.objects.update(
+            user=instance.user,
+            certificate_number=instance.birth_number,
+            first_name=instance.first_name,
+            last_name=instance.last_name,
+            birth_date=instance.birth_date,
+            death_date=instance.death_date,
+            death_time=instance.death_time,
+            birth_wilaya=instance.birth_wilaya,
+            birth_commune=instance.birth_commune,
+            death_wilaya=instance.death_wilaya,
+            death_commune=instance.death_commune,
+            father_name=instance.father_name,
+            mother_name=instance.mother_name,
+            birth_number=instance.birth_number
+        )
+    else:
+        # create new sertficat
+        DeathCertificate.objects.create(
+            user=instance.user,
+            certificate_number=instance.birth_number,
+            first_name=instance.first_name,
+            last_name=instance.last_name,
+            birth_date=instance.birth_date,
+            death_date=instance.death_date,
+            death_time=instance.death_time,
+            birth_wilaya=instance.birth_wilaya,
+            birth_commune=instance.birth_commune,
+            death_wilaya=instance.death_wilaya,
+            death_commune=instance.death_commune,
+            father_name=instance.father_name,
+            mother_name=instance.mother_name,
+            birth_number=instance.birth_number
+        )
 
+@receiver(post_save, sender=BirthRecord)
+def create_certificate(sender, instance, **kwargs):
+    certificate = BirthCertificate.objects.filter(birth_number=instance.birth_number).first()
+    if certificate:
+        # if it exists, update all certificate info
+        certificate.objects.update(
+            user=instance.user,
+            certificate_number=instance.birth_number,
+            first_name=instance.first_name,
+            last_name=instance.last_name,
+            birth_date=instance.birth_date,
+            birth_time=instance.birth_time,
+            birth_wilaya=instance.wilaya,
+            birth_commune=instance.commune,
+            father_name=instance.father_name,
+            mother_name=instance.mother_name,
+            birth_number=instance.birth_number
+        )
+    else:
+        # create new sertficat
+        BirthCertificate.objects.create(
+            user=instance.user,
+            certificate_number=instance.birth_number,
+            first_name=instance.first_name,
+            last_name=instance.last_name,
+            birth_date=instance.birth_date,
+            birth_time=instance.birth_time,
+            birth_wilaya=instance.wilaya,
+            birth_commune=instance.commune,
+            father_name=instance.father_name,
+            mother_name=instance.mother_name,
+            birth_number=instance.birth_number
+        )
 '''
 from cryptography.fernet import Fernet
 from dotenv import load_dotenv

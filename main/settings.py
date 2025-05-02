@@ -27,6 +27,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+#SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+#SECURE_SSL_REDIRECT = True
+
+#CSRF_TRUSTED_ORIGINS =['*']
 
 # Application definition
 
@@ -128,7 +132,8 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
+#SESSION_COOKIE_SECURE = True
+#CSRF_COOKIE_SECURE = True
 
 
 REST_FRAMEWORK = {

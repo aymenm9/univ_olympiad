@@ -52,7 +52,7 @@ class DeathRecordView(generics.ListCreateAPIView):
         return serializer.save(user=self.request.user)
 
 
-class DeathRecordDetailView(generics.RetrieveAPIView):
+class DeathRecordDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = DeathRecordSerializer
     queryset = DeathRecord.objects.all()
