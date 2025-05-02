@@ -56,7 +56,7 @@ class DeathRecordDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = DeathRecordSerializer
     queryset = DeathRecord.objects.all()
-    lookup_field = 'nuber_of_birth'
+    lookup_field = 'birth_number'
 
     def get_object(self):
         load_dotenv()
