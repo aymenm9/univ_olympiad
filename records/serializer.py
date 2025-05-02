@@ -7,6 +7,7 @@ class BirthRecordSerializer(serializers.ModelSerializer):
         fields = '__all__'
         extra_kwargs = {
             'user': {'required': False},
+            'description': {'required': False, 'allow_blank': True},
         }
         read_only_fields = ['user','hospital','id']
 
@@ -17,6 +18,7 @@ class DeathRecordSerializer(serializers.ModelSerializer):
         fields = '__all__'
         extra_kwargs = {
             'user': {'required': False},
+            'description': {'required': False, 'allow_blank': True},
         }
         read_only_fields = ['user','hospital','id']
 
