@@ -73,11 +73,12 @@ class DeathRecordDetailView(generics.RetrieveUpdateDestroyAPIView):
         return obj
 
 from .util import generate_birth_certificate_pdf, generate_death_certificate_pdf, sign_pdf
+from drf_spectacular.types import OpenApiTypes
 class BirthCertificateView(APIView):
     permission_classes = [IsAuthenticated, IsWorker]
     @extend_schema(
         request=None,
-        responses={200: str},
+        responses={200: OpenApiTypes.BINARY},
         description="Generate a birth certificate PDF for the given birth_number.",
     )
     def get(self,request, birth_number):
@@ -100,7 +101,7 @@ class DeathCertificateView(APIView):
     permission_classes = [IsAuthenticated, IsWorker]
     @extend_schema(
         request=None,
-        responses={200: str},
+        responses={200: OpenApiTypes.BINARY},
         description="Generate a death certificate PDF for the given birth_number.",
     )
     def get(self,request, birth_number):
