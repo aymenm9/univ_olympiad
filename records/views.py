@@ -42,7 +42,7 @@ class BirthRecordDetailView(generics.RetrieveUpdateDestroyAPIView):
         return serializer.save(user=self.request.user, hospital=self.request.user.info.hospital)
 
 class DeathRecordView(generics.ListCreateAPIView):
-    permission_classes = [IsAuthenticated, IsHospital]
+    permission_classes = [IsAuthenticated, IsDSP_Hospital, IsWorker]
     serializer_class = DeathRecordSerializer
     queryset = DeathRecord.objects.all()
 
