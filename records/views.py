@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
-from .models import BirthRecord, DeathRecord
+from .models import BirthRecord, DeathRecord, BirthCertificate, DeathCertificate
 from .serializer import BirthRecordSerializer, DeathRecordSerializer
 from rest_framework.permissions import IsAuthenticated
 from users.users_permissions import IsHospital, IsAPC, IsDSP, IsDSP_Hospital, IsWorker
@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 import os
 from cryptography.fernet import Fernet
 from django.contrib.auth.hashers import make_password
+from django.http import HttpResponse
 # Create your views here.
 
 class BirthRecordView(generics.ListCreateAPIView):
@@ -70,6 +71,54 @@ class DeathRecordDetailView(generics.RetrieveUpdateDestroyAPIView):
             obj.mother_name = fernet.decrypt(obj.mother_name.encode()).decode()
       
         return obj
+
+from .util import generate_birth_certificate_pdf, generate_death_certificate_pdf, sign_pdf
+class BirthCertificateView(APIView):
+    permission_classes = [IsAuthenticated, IsWorker]
+    @extend_schema(
+        request=None,
+        responses={200: str},
+        description="Generate a birth certificate PDF for the given birth_number.",
+    )
+    def get(self,request, birth_number):
+        try:
+            birth_certificate = BirthCertificate.objects.get(birth_number=birth_number)
+        except BirthCertificate.DoesNotExist:
+            return Response({"error": "Birth C not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        
+        data = generate_birth_certificate_pdf(birth_certificate, request.user)
+        signed_data  = sign_pdf(data)
+        # Save the signed PDF to a file or return it as a response
+        response = HttpResponse(signed_data['pdf'], content_type='application/pdf')
+        filename = f"birth_certificate_{birth_number}.pdf"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        response['X-Signature'] = signed_data['signature']
+        return response
+
+class DeathCertificateView(APIView):
+    permission_classes = [IsAuthenticated, IsWorker]
+    @extend_schema(
+        request=None,
+        responses={200: str},
+        description="Generate a death certificate PDF for the given birth_number.",
+    )
+    def get(self,request, birth_number):
+        try:
+            death_certificate = DeathCertificate.objects.get(birth_number=birth_number)
+        except DeathCertificate.DoesNotExist:
+            return Response({"error": "Death Certificate not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        
+        data = generate_death_certificate_pdf(death_certificate, request.user)
+        signed_data  = sign_pdf(data)
+        # Save the signed PDF to a file or return it as a response
+        response = HttpResponse(signed_data['pdf'], content_type='application/pdf')
+        filename = f"death_certificate_{birth_number}.pdf"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        response['X-Signature'] = signed_data['signature']
+        return response
+
 
 
 from .gen import generate

@@ -16,7 +16,7 @@ class BirthRecord(models.Model):
     wilaya = models.CharField(max_length=100)
     commune = models.CharField(max_length=100)
     sex = models.CharField(max_length=10, choices=[
-        ('male','male'), ('female','female')], default='men')
+        ('male','male'), ('female','female')], default='male')
     rh = models.CharField(max_length=10)
     father_name = models.CharField(max_length=100)
     mother_name = models.CharField(max_length=100)
@@ -38,7 +38,7 @@ class DeathRecord(models.Model):
     birth_wilaya = models.CharField(max_length=100)
     birth_commune = models.CharField(max_length=100)
     sex = models.CharField(max_length=10, choices=[
-        ('male','male'), ('female','female')], default='men')
+        ('male','male'), ('female','female')], default='male')
     death_cause = models.CharField(null=True)
     rh = models.CharField(max_length=10)
     description = models.TextField(null=True, blank=True)
@@ -56,13 +56,15 @@ class BirthCertificate(models.Model):
     issue_time = models.TimeField(auto_now=True)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
+    sex = models.CharField(max_length=10, choices=[
+        ('male','male'), ('female','female')], default='male')
     birth_date = models.DateField()
     birth_time = models.TimeField()
     birth_wilaya = models.CharField(max_length=100)
     birth_commune = models.CharField(max_length=100)
     father_name = models.CharField(max_length=100)
     mother_name = models.CharField(max_length=100)
-    birth_number = models.IntegerField()
+    birth_number = models.IntegerField(unique=True)
 
 
 class DeathCertificate(models.Model):
@@ -72,6 +74,8 @@ class DeathCertificate(models.Model):
     issue_time = models.TimeField(auto_now=True)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
+    sex = models.CharField(max_length=10, choices=[
+        ('male','male'), ('female','female')], default='male')
     birth_date = models.DateField()
     death_date = models.DateField()
     death_time = models.TimeField()
@@ -81,7 +85,7 @@ class DeathCertificate(models.Model):
     death_commune = models.CharField(max_length=100)
     father_name = models.CharField(max_length=100)
     mother_name = models.CharField(max_length=100)
-    birth_number = models.IntegerField()
+    birth_number = models.IntegerField(unique=True)
 
 
 
@@ -103,6 +107,7 @@ def clc_age_and_update_create_certificate(sender, instance, **kwargs):
             certificate_number=instance.birth_number,
             first_name=instance.first_name,
             last_name=instance.last_name,
+            sex=instance.sex,
             birth_date=instance.birth_date,
             death_date=instance.death_date,
             death_time=instance.death_time,
@@ -121,6 +126,7 @@ def clc_age_and_update_create_certificate(sender, instance, **kwargs):
             certificate_number=instance.birth_number,
             first_name=instance.first_name,
             last_name=instance.last_name,
+            sex=instance.sex,
             birth_date=instance.birth_date,
             death_date=instance.death_date,
             death_time=instance.death_time,

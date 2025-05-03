@@ -63,5 +63,20 @@ class UserInfo(models.Model):
         
         return f'{self.user.username} - {self.role} - {self.Organization} - {org_name}'
     
+    def get_organization(self):
+        if self.Organization == 'Hospital':
+            return self.hospital
+        elif self.Organization == 'DSP':
+            return self.dsp
+        elif self.Organization == 'APC':
+            return self.apc
+        else:
+            return None
 
 
+class ChatHistory(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='chat_history')
+    msg = models.JSONField(default=list)
+
+    def __str__(self):
+        return f'{self.user}, {self.msg}'

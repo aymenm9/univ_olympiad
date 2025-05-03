@@ -11,7 +11,7 @@ class UserInfoSerializer(serializers.ModelSerializer):
             'user': {'read_only': True},
         }
 class UserSerializer(serializers.ModelSerializer):
-    user_info = UserInfoSerializer(source='info', read_only=True)
+    user_info = UserInfoSerializer(source='info')
     class Meta:
         model = User
         fields = ['id', 'username', 'password', 'email', 'first_name', 'last_name', 'user_info']
@@ -40,6 +40,28 @@ class hospitalSerializer(serializers.ModelSerializer):
             'dsp': {'read_only': True},
         }
 
+class APCSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Hospital
+        fields = '__all__'
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'dsp': {'read_only': True},
+        }
+
+class CreateAPCSerializer(serializers.Serializer):
+    apc = APCSerializer()
+    password = serializers.CharField()
+
 class CreateHospitalSerializer(serializers.Serializer):
     hospital = hospitalSerializer()
     password = serializers.CharField()
+
+
+class chatHistorySerializer(serializers.Serializer):
+
+    message = serializers.CharField()
+
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField()
+    new_password = serializers.CharField()
