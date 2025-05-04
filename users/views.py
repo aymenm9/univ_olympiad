@@ -112,12 +112,15 @@ class CreateHospitalView(APIView):
     )
     def post(self, request):
         serializer = CreateHospitalSerializer(data=request.data)
+        
         if serializer.is_valid():
             hospital_info = serializer.validated_data['hospital']
+            apc = APC.objects.get(id=hospital_info['apc'])
             hospital = Hospital.objects.create(
                 name=hospital_info['name'],
-                wilaya=hospital_info['wilaya'],
-                commune=hospital_info['commune'],
+                wilaya=request.user.info.dsp.wilaya,
+                commune=apc.commune,
+                apc=apc,
                 address=hospital_info['address'],
                 phone_number=hospital_info['phone_number'],
                 email=hospital_info['email'],
