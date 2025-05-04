@@ -11,7 +11,7 @@ from .serializer import (UserSerializer, LoginSerializer,
 from rest_framework_simplejwt.tokens import RefreshToken
 from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
-from .users_permissions import IsDSP, IsAdmin
+from .users_permissions import IsDSP, IsAdmin, IsDSP_APC, IsWorker
 from .models import Hospital, UserInfo, APC, DSP
 from django.contrib.auth.models import User
 from .chat_bot import chatbot
@@ -115,10 +115,10 @@ class CreateHospitalView(APIView):
         
         if serializer.is_valid():
             hospital_info = serializer.validated_data['hospital']
-            apc = APC.objects.get(id=hospital_info['apc'])
+            apc = hospital_info['apc']
             hospital = Hospital.objects.create(
                 name=hospital_info['name'],
-                wilaya=request.user.info.dsp.wilaya,
+                wilaya=apc.wilaya,
                 commune=apc.commune,
                 apc=apc,
                 address=hospital_info['address'],
@@ -130,19 +130,32 @@ class CreateHospitalView(APIView):
                 username=hospital_info['name'],
                 password=serializer.validated_data['password'],
                 first_name=hospital_info['name'],
-                last_name='Admin'
+                last_name='Admin',
+                email=hospital_info['email']
             )
             user_info = UserInfo.objects.create(
                 user=admin,
                 Organization='Hospital',
                 hospital=hospital,
-                role='Admin'
+                role='Admin',
             )
             hospital_serializer = hospitalSerializer(hospital)
             return Response(hospital_serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class HospitalView(generics.ListAPIView):
+    queryset = Hospital.objects.all()
+    serializer_class = hospitalSerializer
+    permission_classes = [IsAuthenticated, IsWorker]
+
+    def get_queryset(self):
+        if self.request.user.info.Organization == 'Hospital':
+            return super().get_queryset().filter(id=self.request.user.info.hospital.id)
+        elif self.request.user.info.Organization == 'APC':
+            return super().get_queryset().filter(apc=self.request.user.info.apc)
+        elif self.request.user.info.Organization == 'DSP':
+            return super().get_queryset().filter(dsp=self.request.user.info.dsp)
 
 class CreateAPCView(APIView):
     permission_classes = [IsAuthenticated, IsDSP, IsAdmin]
@@ -154,10 +167,10 @@ class CreateAPCView(APIView):
     def post(self, request):
         serializer = CreateAPCSerializer(data=request.data)
         if serializer.is_valid():
-            apc_info = serializer.validated_data['hospital']
+            apc_info = serializer.validated_data['apc']
             apc = APC.objects.create(
                 name=apc_info['name'],
-                wilaya=apc_info['wilaya'],
+                wilaya=request.user.info.dsp.wilaya,
                 commune=apc_info['commune'],
                 address=apc_info['address'],
                 phone_number=apc_info['phone_number'],
@@ -168,7 +181,8 @@ class CreateAPCView(APIView):
                 username=apc_info['name'],
                 password=serializer.validated_data['password'],
                 first_name=apc_info['name'],
-                last_name='Admin'
+                last_name='Admin',
+                email=apc_info['email']
             )
             user_info = UserInfo.objects.create(
                 user=admin,
@@ -180,6 +194,21 @@ class CreateAPCView(APIView):
             return Response(apc_serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+
+class APCView(generics.ListAPIView):
+    queryset = APC.objects.all()
+    serializer_class = APCSerializer
+    permission_classes = [IsAuthenticated, IsDSP_APC,IsWorker]
+
+    def get_queryset(self):
+        if self.request.user.info.Organization == 'APC':
+            return super().get_queryset().filter(id=self.request.user.info.apc.id)
+        elif self.request.user.info.Organization == 'DSP':
+            return super().get_queryset().filter(dsp=self.request.user.info.dsp)
+
+
+
 class ChatbotView(APIView):
     permission_classes = [IsAuthenticated]
 

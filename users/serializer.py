@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import UserInfo, Hospital
+from .models import UserInfo, Hospital, APC, DSP
 
 
 class hospitalSerializer(serializers.ModelSerializer):
@@ -16,7 +16,7 @@ class hospitalSerializer(serializers.ModelSerializer):
 
 class APCSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Hospital
+        model = APC
         fields = '__all__'
         extra_kwargs = {
             'id': {'read_only': True},
@@ -26,7 +26,7 @@ class APCSerializer(serializers.ModelSerializer):
     
 class DSPSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Hospital
+        model = DSP
         fields = '__all__'
         extra_kwargs = {
             'id': {'read_only': True},

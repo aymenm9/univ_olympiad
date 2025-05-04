@@ -21,10 +21,13 @@ class IsDSP_Hospital(BasePermission):
     def has_permission(self, request, view):
         return request.user.info.Organization == 'DSP' or request.user.info.Organization == 'Hospital'
 
+class IsDSP_APC(BasePermission):
+    def has_permission(self, request, view):
+        return request.user.info.Organization == 'DSP' or request.user.info.Organization == 'APC'
 
 class IsWorker(BasePermission):
     def has_permission(self, request, view):
-        return request.user.info.role == 'Worker'
+        return request.user.info.role == 'Worker' or request.user.info.role == 'Admin'
     
 class IsAdmin(permissions.BasePermission):
     def has_permission(self, request, view):
