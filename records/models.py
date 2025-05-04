@@ -22,6 +22,10 @@ class BirthRecord(models.Model):
     mother_name = models.CharField(max_length=100)
     birth_number = models.AutoField(unique=True, primary_key=True)
     description = models.TextField(null=True, blank=True)
+    birth_number = models.CharField(max_length=15, unique=True)
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name} - Birth Record"
 
 class DeathRecord(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
@@ -39,14 +43,17 @@ class DeathRecord(models.Model):
     birth_commune = models.CharField(max_length=100)
     sex = models.CharField(max_length=10, choices=[
         ('male','male'), ('female','female')], default='male')
-    death_cause = models.CharField(null=True)
+    death_cause = models.CharField(max_length=255, null=True)
     rh = models.CharField(max_length=10)
     description = models.TextField(null=True, blank=True)
     age = models.IntegerField(default=0)
     father_name = models.CharField(max_length=100)
     mother_name = models.CharField(max_length=100)
-    birth_number = models.IntegerField()
+    birth_number = models.CharField(max_length=15, unique=True)
+    death_number = models.CharField(max_length=15, unique=True)
 
+    def __str__(self):
+        return f"{self.first_name} {self.last_name} - Death Record"
 
 
 class BirthCertificate(models.Model):
@@ -64,8 +71,11 @@ class BirthCertificate(models.Model):
     birth_commune = models.CharField(max_length=100)
     father_name = models.CharField(max_length=100)
     mother_name = models.CharField(max_length=100)
-    birth_number = models.IntegerField(unique=True)
+    birth_number = models.CharField(max_length=15, unique=True)
+    is_valid = models.BooleanField(default=False)
 
+    def __str__(self):
+        return f"{self.first_name} {self.last_name} - Birth Certificate"
 
 class DeathCertificate(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
@@ -85,80 +95,47 @@ class DeathCertificate(models.Model):
     death_commune = models.CharField(max_length=100)
     father_name = models.CharField(max_length=100)
     mother_name = models.CharField(max_length=100)
-    birth_number = models.IntegerField(unique=True)
+    birth_number = models.CharField(max_length=15, unique=True)
+    death_number = models.CharField(max_length=15, unique=True)
+    is_valid = models.BooleanField(default=False)
 
+    def __str__(self):
+        return f"{self.first_name} {self.last_name} - Death Certificate"
 
-
+# -----------------------------------------------------
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
-@receiver(pre_save, sender=DeathRecord)
-def clc_age_and_update_create_certificate(sender, instance, **kwargs):
-    if instance.death_date and instance.birth_date:
-        age = instance.death_date.year - instance.birth_date.year
-        instance.age = age
-    else:
-        instance.age = 0
-    
-    certificate = DeathCertificate.objects.filter(birth_number=instance.birth_number).first()
-    if certificate:
-        # if it exists, update all certificate info
-        certificate.objects.update(
-            user=instance.user,
-            certificate_number=instance.birth_number,
-            first_name=instance.first_name,
-            last_name=instance.last_name,
-            sex=instance.sex,
-            birth_date=instance.birth_date,
-            death_date=instance.death_date,
-            death_time=instance.death_time,
-            birth_wilaya=instance.birth_wilaya,
-            birth_commune=instance.birth_commune,
-            death_wilaya=instance.death_wilaya,
-            death_commune=instance.death_commune,
-            father_name=instance.father_name,
-            mother_name=instance.mother_name,
-            birth_number=instance.birth_number
-        )
-    else:
-        # create new sertficat
-        DeathCertificate.objects.create(
-            user=instance.user,
-            certificate_number=instance.birth_number,
-            first_name=instance.first_name,
-            last_name=instance.last_name,
-            sex=instance.sex,
-            birth_date=instance.birth_date,
-            death_date=instance.death_date,
-            death_time=instance.death_time,
-            birth_wilaya=instance.birth_wilaya,
-            birth_commune=instance.birth_commune,
-            death_wilaya=instance.death_wilaya,
-            death_commune=instance.death_commune,
-            father_name=instance.father_name,
-            mother_name=instance.mother_name,
-            birth_number=instance.birth_number
-        )
+from django.utils import timezone
+
+@receiver(pre_save, sender=BirthRecord)
+def add_birth_n(sender, instance, **kwargs):
+    year = timezone.now().year
+    last_record = BirthRecord.objects.filter(registration_date__year=year).order_by('-id').first()
+    number = int(last_record.birth_number.split('-')[1]) if last_record else 1
+    instance.birth_number = f"{year}-{number}"
+
 
 @receiver(post_save, sender=BirthRecord)
 def create_certificate(sender, instance, **kwargs):
     certificate = BirthCertificate.objects.filter(birth_number=instance.birth_number).first()
     if certificate:
-        # if it exists, update all certificate info
-        certificate.objects.update(
-            user=instance.user,
-            certificate_number=instance.birth_number,
-            first_name=instance.first_name,
-            last_name=instance.last_name,
-            birth_date=instance.birth_date,
-            birth_time=instance.birth_time,
-            birth_wilaya=instance.wilaya,
-            birth_commune=instance.commune,
-            father_name=instance.father_name,
-            mother_name=instance.mother_name,
-            birth_number=instance.birth_number
-        )
+        if not certificate.is_valid:
+            # if it exists, update all certificate info
+            certificate.objects.update(
+                user=instance.user,
+                certificate_number=instance.birth_number,
+                first_name=instance.first_name,
+                last_name=instance.last_name,
+                birth_date=instance.birth_date,
+                birth_time=instance.birth_time,
+                birth_wilaya=instance.wilaya,
+                birth_commune=instance.commune,
+                father_name=instance.father_name,
+                mother_name=instance.mother_name,
+                birth_number=instance.birth_number,
+                is_valid=False
+            )
     else:
-        # create new sertficat
         BirthCertificate.objects.create(
             user=instance.user,
             certificate_number=instance.birth_number,
@@ -172,6 +149,63 @@ def create_certificate(sender, instance, **kwargs):
             mother_name=instance.mother_name,
             birth_number=instance.birth_number
         )
+
+
+@receiver(pre_save, sender=DeathRecord)
+def clc_age_and_update_create_certificate(sender, instance, **kwargs):
+    if instance.death_date and instance.birth_date:
+        age = instance.death_date.year - instance.birth_date.year
+        instance.age = age
+    else:
+        instance.age = 0
+    
+    certificate = DeathCertificate.objects.filter(birth_number=instance.birth_number).first()
+    if certificate:
+        if not certificate.is_valid:
+        # if it exists, update all certificate info
+            certificate.objects.update(
+                user=instance.user,
+                certificate_number=instance.birth_number,
+                first_name=instance.first_name,
+                last_name=instance.last_name,
+                sex=instance.sex,
+                birth_date=instance.birth_date,
+                death_date=instance.death_date,
+                death_time=instance.death_time,
+                birth_wilaya=instance.birth_wilaya,
+                birth_commune=instance.birth_commune,
+                death_wilaya=instance.death_wilaya,
+                death_commune=instance.death_commune,
+                father_name=instance.father_name,
+                mother_name=instance.mother_name,
+                birth_number=instance.birth_number,
+                death_number=instance.death_number,
+                is_valid=False
+            )
+    else:
+        # create new sertficat
+        year = timezone.now().year
+        last_record = DeathRecord.objects.filter(registration_date__year=year).order_by('-id').first()
+        number = int(last_record.death_number.split('-')[1]) if last_record else 1
+        instance.death_number = f"{year}-{number}"
+        DeathCertificate.objects.create(
+            user=instance.user,
+            certificate_number=instance.death_number,
+            first_name=instance.first_name,
+            last_name=instance.last_name,
+            sex=instance.sex,
+            birth_date=instance.birth_date,
+            death_date=instance.death_date,
+            death_time=instance.death_time,
+            birth_wilaya=instance.birth_wilaya,
+            birth_commune=instance.birth_commune,
+            death_wilaya=instance.death_wilaya,
+            death_commune=instance.death_commune,
+            father_name=instance.father_name,
+            mother_name=instance.mother_name,
+            birth_number=instance.birth_number
+        )
+
 '''
 from cryptography.fernet import Fernet
 from dotenv import load_dotenv

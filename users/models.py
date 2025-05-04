@@ -12,18 +12,6 @@ class DSP(models.Model):
     def __str__(self):
         return f'DSP of : {self.name} wilaya: {self.wilaya}'
 
-class Hospital(models.Model):
-    dsp = models.ForeignKey(DSP, on_delete=models.CASCADE, related_name='hospitals')
-    name = models.CharField(max_length=100)
-    wilaya = models.CharField(max_length=255)
-    commune = models.CharField(max_length=255)
-    address = models.CharField(max_length=255)
-    phone_number = models.CharField(max_length=10)
-    email = models.EmailField()
-
-    def __str__(self):
-        return f'Hospital of : {self.name} wilaya: {self.wilaya} commune: {self.commune}'
-
 class APC(models.Model):
     dsp = models.ForeignKey(DSP, on_delete=models.CASCADE, related_name='apcs')
     name = models.CharField(max_length=100)
@@ -36,6 +24,19 @@ class APC(models.Model):
     def __str__(self):
         return f'APC of : {self.name} wilaya: {self.wilaya} commune: {self.commune}'
 
+
+class Hospital(models.Model):
+    dsp = models.ForeignKey(DSP, on_delete=models.CASCADE, related_name='hospitals')
+    apc = models.ForeignKey(APC, on_delete=models.CASCADE, related_name='hospitals')
+    name = models.CharField(max_length=100)
+    wilaya = models.CharField(max_length=255)
+    commune = models.CharField(max_length=255)
+    address = models.CharField(max_length=255)
+    phone_number = models.CharField(max_length=10)
+    email = models.EmailField()
+
+    def __str__(self):
+        return f'Hospital of : {self.name} wilaya: {self.wilaya} commune: {self.commune}'
 class UserInfo(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='info')
     Organization = models.CharField(choices=[

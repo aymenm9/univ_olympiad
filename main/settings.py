@@ -27,6 +27,18 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+SECURE_SSL_REDIRECT = False
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
+    
+    # Trust your loca.lt domain for CSRF
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'http://0.0.0.0:8000',
+    'https://aymen123univ.loca.lt',  # Your loca.lt domain - note the https://
+    ]
+
 #SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 #SECURE_SSL_REDIRECT = True
 
