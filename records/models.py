@@ -20,7 +20,6 @@ class BirthRecord(models.Model):
     rh = models.CharField(max_length=10)
     father_name = models.CharField(max_length=100)
     mother_name = models.CharField(max_length=100)
-    birth_number = models.AutoField(unique=True, primary_key=True)
     description = models.TextField(null=True, blank=True)
     birth_number = models.CharField(max_length=15, unique=True)
 

@@ -8,6 +8,7 @@ class BirthRecordSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'user': {'required': False},
             'description': {'required': False},
+            'birth_number': {'read_only': True},
         }
         read_only_fields = ['user','hospital','id']
 
@@ -19,7 +20,8 @@ class DeathRecordSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'user': {'required': False},
             'description': {'required': False},
-            'age': {'required': False}
+            'age': {'required': False},
+            'death_number': {'read_only': True},
         }
         read_only_fields = ['user','hospital','id']
 
