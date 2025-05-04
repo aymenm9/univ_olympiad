@@ -4,9 +4,9 @@ from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
 from .models import BirthRecord, DeathRecord, BirthCertificate, DeathCertificate
-from .serializer import BirthRecordSerializer, DeathRecordSerializer
+from .serializer import BirthRecordSerializer, DeathRecordSerializer, BirthCertificateSerializer, DeathCertificateSerializer
 from rest_framework.permissions import IsAuthenticated
-from users.users_permissions import IsHospital, IsAPC, IsDSP, IsDSP_Hospital, IsWorker
+from users.users_permissions import IsHospital, IsAPC, IsDSP, IsDSP_Hospital, IsWorker, IsAdmin, IsDSP_APC
 from drf_spectacular.utils import extend_schema
 from dotenv import load_dotenv
 import os
@@ -21,9 +21,9 @@ class BirthRecordView(generics.ListCreateAPIView):
     queryset = BirthRecord.objects.all()
 
     def get_queryset(self):
-        if self.request.user.info.role == 'DSP':
-            return super().get_queryset()
-        return super().get_queryset().filter(user=self.request.user)
+        if self.request.user.info.Organization == 'DSP':
+            return super().get_queryset().filter(hospital__dsp=self.request.user.info.dsp)
+        return super().get_queryset().filter(hospital=self.request.user.info.hospital)
 
     def perform_create(self, serializer):
         return serializer.save(user=self.request.user, hospital=self.request.user.info.hospital)
@@ -35,9 +35,9 @@ class BirthRecordDetailView(generics.RetrieveUpdateDestroyAPIView):
     lookup_field = 'birth_number'
 
     def get_queryset(self):
-        if self.request.user.info.role == 'DSP':
-            return super().get_queryset()
-        return super().get_queryset().filter(user=self.request.user)
+        if self.request.user.info.Organization == 'DSP':
+            return super().get_queryset().filter(hospital__dsp=self.request.user.info.dsp)
+        return super().get_queryset().filter(hospital=self.request.user.info.hospital)
     def perform_update(self, serializer):
         return serializer.save(user=self.request.user, hospital=self.request.user.info.hospital)
 
@@ -47,34 +47,46 @@ class DeathRecordView(generics.ListCreateAPIView):
     queryset = DeathRecord.objects.all()
 
     def get_queryset(self):
-        return super().get_queryset().filter(user=self.request.user)
+        if self.request.user.info.Organization == 'DSP':
+            return super().get_queryset().filter(hospital__dsp=self.request.user.info.dsp)
+        return super().get_queryset().filter(hospital=self.request.user.info.hospital)
 
     def perform_create(self, serializer):
-        return serializer.save(user=self.request.user)
+        return serializer.save(user=self.request.user, hospital=self.request.user.info.hospital)
 
 
 class DeathRecordDetailView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsDSP_Hospital, IsWorker]
     serializer_class = DeathRecordSerializer
     queryset = DeathRecord.objects.all()
-    lookup_field = 'birth_number'
+    lookup_field = 'death_number'
 
-    def get_object(self):
-        load_dotenv()
-        obj = super().get_object()
-        if self.request.user.role == 'APC' or self.request.user.role == 'DSP':
-            key = os.getenv('FERNET_KEY')
-            fernet = Fernet(key)
-            obj.first_name = fernet.decrypt(obj.first_name.encode()).decode()
-            obj.last_name = fernet.decrypt(obj.last_name.encode()).decode()
-            obj.father_name = fernet.decrypt(obj.father_name.encode()).decode()
-            obj.mother_name = fernet.decrypt(obj.mother_name.encode()).decode()
-      
-        return obj
+    def get_queryset(self):
+        if self.request.user.info.Organization == 'DSP':
+            return super().get_queryset().filter(hospital__dsp=self.request.user.info.dsp)
+        return super().get_queryset().filter(hospital=self.request.user.info.hospital)
+    def perform_update(self, serializer):
+        return serializer.save(user=self.request.user, hospital=self.request.user.info.hospital)
 
 from .util import generate_birth_certificate_pdf, generate_death_certificate_pdf, sign_pdf
 from drf_spectacular.types import OpenApiTypes
-class BirthCertificateView(APIView):
+
+
+
+class BirthCertificateView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated, IsWorker, IsDSP_APC]
+    serializer_class = BirthCertificateSerializer
+    queryset = BirthCertificate.objects.all()
+
+class BirthCertificateDetailView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated, IsWorker, IsDSP_APC]
+    serializer_class = BirthCertificateSerializer
+    queryset = BirthCertificate.objects.all()
+    lookup_field = 'birth_number'
+
+
+
+class BirthCertificatePDF(APIView):
     permission_classes = [IsAuthenticated, IsWorker]
     @extend_schema(
         request=None,
@@ -97,16 +109,27 @@ class BirthCertificateView(APIView):
         response['X-Signature'] = signed_data['signature']
         return response
 
-class DeathCertificateView(APIView):
+
+class DeathCertificateView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated, IsWorker, IsDSP_APC]
+    serializer_class = DeathCertificateSerializer
+    queryset = DeathCertificate.objects.all()
+
+class DeathCertificateDetailView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated, IsWorker, IsDSP_APC]
+    serializer_class = DeathCertificateSerializer
+    queryset = DeathCertificate.objects.all()
+    lookup_field = 'death_number'
+class DeathCertificatePDf(APIView):
     permission_classes = [IsAuthenticated, IsWorker]
     @extend_schema(
         request=None,
         responses={200: OpenApiTypes.BINARY},
-        description="Generate a death certificate PDF for the given birth_number.",
+        description="Generate a death certificate PDF for the given death_number.",
     )
-    def get(self,request, birth_number):
+    def get(self,request, death_number):
         try:
-            death_certificate = DeathCertificate.objects.get(birth_number=birth_number)
+            death_certificate = DeathCertificate.objects.get(death_number=death_number)
         except DeathCertificate.DoesNotExist:
             return Response({"error": "Death Certificate not found."}, status=status.HTTP_404_NOT_FOUND)
         
@@ -115,7 +138,7 @@ class DeathCertificateView(APIView):
         signed_data  = sign_pdf(data)
         # Save the signed PDF to a file or return it as a response
         response = HttpResponse(signed_data['pdf'], content_type='application/pdf')
-        filename = f"death_certificate_{birth_number}.pdf"
+        filename = f"death_certificate_{death_number}.pdf"
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         response['X-Signature'] = signed_data['signature']
         return response

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import BirthRecord, DeathRecord
+from .models import BirthRecord, DeathRecord, BirthCertificate, DeathCertificate
 
 class BirthRecordSerializer(serializers.ModelSerializer):
     class Meta:
@@ -25,14 +25,14 @@ class DeathRecordSerializer(serializers.ModelSerializer):
         }
         read_only_fields = ['user','hospital','id']
 
-class BirthCertificate(serializers.ModelSerializer):
+class BirthCertificateSerializer(serializers.ModelSerializer):
     class Meta:
-        model = BirthRecord
+        model = BirthCertificate
         fields = '__all__'
         read_only_fields = ['user','id']
 
-class DeathCertificate(serializers.ModelSerializer):
+class DeathCertificateSerializer(serializers.ModelSerializer):
     class Meta:
-        model = DeathRecord
+        model = DeathCertificate
         fields = '__all__'
         read_only_fields = ['user','id']

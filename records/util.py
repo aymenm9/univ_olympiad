@@ -165,7 +165,7 @@ def generate_death_certificate_pdf(death_certificate, user):
     y -= 1 * cm
 
     c.setFont("Helvetica", 12)
-    c.drawString(margin_left, y, f"Death Record Number: {death_certificate.birth_number}")
+    c.drawString(margin_left, y, f"Death Number: {death_certificate.death_number}")
 
     # Signature at the bottom
     c.setFont("Helvetica-Oblique", 10)
