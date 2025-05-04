@@ -50,11 +50,6 @@ class ChangePasswordSerializer(serializers.Serializer):
     new_password = serializers.CharField()
 
 
-
-
-
-
-
 class UserInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserInfo
@@ -62,12 +57,14 @@ class UserInfoSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'user': {'read_only': True},
         }
+
+
 class UserSerializer(serializers.ModelSerializer):
     user_info = UserInfoSerializer(source='info')
     organization_info = serializers.SerializerMethodField()
     class Meta:
         model = User
-        fields = ['id', 'username', 'password', 'email', 'first_name', 'last_name', 'user_info']
+        fields = ['id', 'username', 'password', 'email', 'first_name', 'last_name', 'user_info', 'organization_info']
         extra_kwargs = {
             'password': {'write_only': True},
             'id': {'read_only': True},
