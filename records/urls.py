@@ -12,6 +12,7 @@ urlpatterns=[
     path('death_certificate/', views.DeathCertificateView.as_view(), name='death-certificate'),
     path('birth_certificate/<str:birth_number>/', views.BirthCertificateView.as_view(), name='birth-certificate'),
     path('death_certificate/<str:death_number>/', views.DeathCertificateView.as_view(), name='death-certificate'),
+    path('statistics/', views.StatisticView.as_view(), name='statistics'),
 
 
     path('generate_death_ai/', views.AiView.as_view(), name='generate-death-ai'),

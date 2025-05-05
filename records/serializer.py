@@ -43,6 +43,6 @@ class DeathCertificateSerializer(serializers.ModelSerializer):
     
 
 class StatisticSerializer(serializers.Serializer):
-    death = serializers.IntegerField
-    birht = serializers.IntegerField
-    total = serializers.IntegerField
+    death = serializers.IntegerField()
+    birth = serializers.IntegerField()
+    total = serializers.IntegerField()

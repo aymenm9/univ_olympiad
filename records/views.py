@@ -249,9 +249,27 @@ class StatisticView(APIView):
         responses={200:StatisticSerializer} 
     )
     def get(self,request):
+        death,birth= 0,0
         if request.user.info.Organization == 'Hospital':
-            death = DeathRecord.objects.filter(hospital=request.user.info.hospital)
+            death = DeathRecord.objects.filter(hospital=request.user.info.hospital).count()
+            birth = BirthRecord.objects.filter(hospital=request.user.info.hospital).count()
+        elif request.user.info.Organization == 'APC':
+            death = DeathCertificate.objects.filter(death_commune=request.user.info.apc.commune).count()
+            birth = BirthCertificate.objects.filter(birth_commune=request.user.info.apc.commune).count()
+        elif request.user.info.Organization == 'DSP':
+            death = DeathCertificate.objects.filter(death_wilaya=request.user.info.apc.wilaya).count()
+            birth = BirthCertificate.objects.filter(birth_wilaya=request.user.info.apc.wilaya).count()  
+
+        total = death + birth
+
+        data = StatisticSerializer({
+            "death": death,
+            "birth": birth,
+            "total": total
+        })
+        return Response(data.data,status=status.HTTP_200_OK)
         
+
 
 from .gen import generate
 
