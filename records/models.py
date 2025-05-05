@@ -57,7 +57,7 @@ class DeathRecord(models.Model):
 
 class BirthCertificate(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    certificate_number = models.IntegerField()
+    certificate_number = models.CharField()
     issue_date = models.DateField(auto_now=True)
     issue_time = models.TimeField(auto_now=True)
     first_name = models.CharField(max_length=100)
@@ -105,7 +105,7 @@ class DeathCertificate(models.Model):
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 from django.utils import timezone
-
+'''
 @receiver(pre_save, sender=BirthRecord)
 def add_birth_n(sender, instance, **kwargs):
     year = timezone.now().year
@@ -148,7 +148,6 @@ def create_certificate(sender, instance, **kwargs):
             mother_name=instance.mother_name,
             birth_number=instance.birth_number
         )
-
 
 @receiver(pre_save, sender=DeathRecord)
 def clc_age_and_update_create_certificate(sender, instance, **kwargs):
@@ -205,7 +204,7 @@ def clc_age_and_update_create_certificate(sender, instance, **kwargs):
             birth_number=instance.birth_number
         )
 
-'''
+
 from cryptography.fernet import Fernet
 from dotenv import load_dotenv
 import os
@@ -228,10 +227,10 @@ def encrypt_data(sender, instance, **kwargs):
     instance.first_name = fernet.encrypt(instance.first_name.encode()).decode()
     instance.last_name = fernet.encrypt(instance.last_name.encode()).decode()
     instance.father_name = fernet.encrypt(instance.father_name.encode()).decode()
-    instance.mother_name = fernet.encrypt(instance.mother_name.encode()).decode()'''
+    instance.mother_name = fernet.encrypt(instance.mother_name.encode()).decode()
 
 
-'''# decryptor all the data using the nuber_of_birth befour save
+# decryptor all the data using the nuber_of_birth befour save
 @receiver(pre_save, sender=BirthRecord)
 def decrypt_data(sender, instance, **kwargs):
     key = instance.nuber_of_birth if instance.nuber_of_birth else b'9999'

@@ -22,6 +22,7 @@ class APCSerializer(serializers.ModelSerializer):
             'id': {'read_only': True},
             'dsp': {'read_only': True},
             'wilaya': {'read_only': True},
+            'commune': {'read_only': True},
         }
     
 class DSPSerializer(serializers.ModelSerializer):

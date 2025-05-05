@@ -6,9 +6,11 @@ class BirthRecordSerializer(serializers.ModelSerializer):
         model = BirthRecord
         fields = '__all__'
         extra_kwargs = {
-            'user': {'required': False},
+            'user': {'read_only': True,},
             'description': {'required': False},
             'birth_number': {'read_only': True},
+            'wilaya':{'read_only':True},
+            'commune':{'read_only':True},
         }
         read_only_fields = ['user','hospital','id']
 
@@ -20,8 +22,10 @@ class DeathRecordSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'user': {'required': False},
             'description': {'required': False},
-            'age': {'required': False},
+            'age': {'read_only': True},
             'death_number': {'read_only': True},
+            'death_wilaya':{'read_only':True},
+            'death_commune':{'read_only':True},
         }
         read_only_fields = ['user','hospital','id']
 
@@ -36,3 +40,9 @@ class DeathCertificateSerializer(serializers.ModelSerializer):
         model = DeathCertificate
         fields = '__all__'
         read_only_fields = ['user','id']
+    
+
+class StatisticSerializer(serializers.Serializer):
+    death = serializers.IntegerField
+    birht = serializers.IntegerField
+    total = serializers.IntegerField

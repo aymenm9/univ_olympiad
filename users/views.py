@@ -171,7 +171,7 @@ class CreateAPCView(APIView):
             apc = APC.objects.create(
                 name=apc_info['name'],
                 wilaya=request.user.info.dsp.wilaya,
-                commune=apc_info['commune'],
+                commune=apc_info['name'],
                 address=apc_info['address'],
                 phone_number=apc_info['phone_number'],
                 email=apc_info['email'],
