@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
-from rest_framework import generics
+from rest_framework import generics, filters
 from rest_framework.response import Response
 from rest_framework import status
 from .models import BirthRecord, DeathRecord, BirthCertificate, DeathCertificate
@@ -21,6 +21,8 @@ class BirthRecordView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated, IsDSP_Hospital, IsWorker]
     serializer_class = BirthRecordSerializer
     queryset = BirthRecord.objects.all()
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['birth_number', 'first_name','last_name'] 
 
     def get_queryset(self):
         if self.request.user.info.Organization == 'DSP':
@@ -76,6 +78,8 @@ class DeathRecordView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated, IsDSP_Hospital, IsWorker]
     serializer_class = DeathRecordSerializer
     queryset = DeathRecord.objects.all()
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['birth_number', 'first_name','last_name', 'death_number'] 
 
     def get_queryset(self):
         if self.request.user.info.Organization == 'DSP':
@@ -145,6 +149,9 @@ class BirthCertificateView(generics.ListAPIView):
     permission_classes = [IsAuthenticated, IsWorker, IsDSP_APC]
     serializer_class = BirthCertificateSerializer
     queryset = BirthCertificate.objects.all()
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['birth_number', 'first_name','last_name'] 
+    
 
 class BirthCertificateDetailView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated, IsWorker, IsDSP_APC]
@@ -197,6 +204,8 @@ class DeathCertificateView(generics.ListAPIView):
     permission_classes = [IsAuthenticated, IsWorker, IsDSP_APC]
     serializer_class = DeathCertificateSerializer
     queryset = DeathCertificate.objects.all()
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['birth_number', 'first_name','last_name','death_number'] 
 
 class DeathCertificateDetailView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated, IsWorker, IsDSP_APC]

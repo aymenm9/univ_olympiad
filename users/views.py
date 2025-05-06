@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
-from rest_framework import generics
+from rest_framework import generics, filters
 from rest_framework.response import Response
 from rest_framework import status
 from .models import User
@@ -34,6 +34,8 @@ class UsersView(generics.ListCreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated, IsAdmin]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['username', 'first_name','last_name'] 
 
     def get_queryset(self):
         if self.request.user.info.Organization == 'Hospital':
@@ -144,6 +146,8 @@ class HospitalView(generics.ListAPIView):
     queryset = Hospital.objects.all()
     serializer_class = hospitalSerializer
     permission_classes = [IsAuthenticated, IsWorker]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name', 'wilaya','commune','phone_number','email'] 
 
     def get_queryset(self):
         if self.request.user.info.Organization == 'Hospital':
@@ -196,6 +200,8 @@ class APCView(generics.ListAPIView):
     queryset = APC.objects.all()
     serializer_class = APCSerializer
     permission_classes = [IsAuthenticated, IsDSP_APC,IsWorker]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name', 'wilaya','commune','phone_number','email'] 
 
     def get_queryset(self):
         if self.request.user.info.Organization == 'APC':
