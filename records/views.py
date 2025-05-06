@@ -259,8 +259,8 @@ class StatisticView(APIView):
             death = DeathCertificate.objects.filter(death_commune=request.user.info.apc.commune).count()
             birth = BirthCertificate.objects.filter(birth_commune=request.user.info.apc.commune).count()
         elif request.user.info.Organization == 'DSP':
-            death = DeathCertificate.objects.filter(death_wilaya=request.user.info.apc.wilaya).count()
-            birth = BirthCertificate.objects.filter(birth_wilaya=request.user.info.apc.wilaya).count()  
+            death = DeathCertificate.objects.filter(death_wilaya=request.user.info.dsp.wilaya).count()
+            birth = BirthCertificate.objects.filter(birth_wilaya=request.user.info.dsp.wilaya).count()  
 
         total = death + birth
 
@@ -310,12 +310,12 @@ class MonthlyStatisticView(APIView):
 
             elif org == 'DSP':
                 death = DeathCertificate.objects.filter(
-                    death_wilaya=request.user.info.apc.wilaya,
+                    death_wilaya=request.user.info.dsp.wilaya,
                     death_date__year=current_year,
                     death_date__month=month
                 ).count()
                 birth = BirthCertificate.objects.filter(
-                    birth_wilaya=request.user.info.apc.wilaya,
+                    birth_wilaya=request.user.info.dsp.wilaya,
                     birth_date__year=current_year,
                     birth_date__month=month
                 ).count()
@@ -341,7 +341,7 @@ class StatisticViewV2(APIView):
         elif request.user.info.Organization == 'APC':
             deaths = DeathCertificate.objects.filter(death_commune=request.user.info.apc.commune).all()
         elif request.user.info.Organization == 'DSP':
-            deaths = DeathCertificate.objects.filter(death_wilaya=request.user.info.apc.wilaya).all()
+            deaths = DeathCertificate.objects.filter(death_wilaya=request.user.info.dsp.wilaya).all()
         
         for death in deaths:
             deths_causes_count[death.death_cause] = deths_causes_count.get(death.death_cause, 0) + 1
