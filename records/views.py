@@ -14,6 +14,7 @@ from cryptography.fernet import Fernet
 from django.contrib.auth.hashers import make_password
 from django.http import HttpResponse
 from django.utils import timezone
+from collections import OrderedDict
 # Create your views here.
 
 class BirthRecordView(generics.ListCreateAPIView):
@@ -249,6 +250,7 @@ class StatisticView(APIView):
         responses={200:StatisticSerializer} 
     )
     def get(self,request):
+        current_year = timezone.now().year
         death,birth= 0,0
         if request.user.info.Organization == 'Hospital':
             death = DeathRecord.objects.filter(hospital=request.user.info.hospital).count()
@@ -269,6 +271,67 @@ class StatisticView(APIView):
         })
         return Response(data.data,status=status.HTTP_200_OK)
         
+class MonthlyStatisticView(APIView):
+    permission_classes = [IsAuthenticated, IsWorker]
+
+    @extend_schema(
+        request=None,
+        responses={200: StatisticSerializer(many=True)}
+    )
+    def get(self, request):
+        current_year = timezone.now().year
+        stats_by_month = OrderedDict()
+        org = request.user.info.Organization
+
+        for month in range(1, 13):
+            if org == 'Hospital':
+                death = DeathRecord.objects.filter(
+                    hospital=request.user.info.hospital,
+                    death_date__year=current_year,
+                    death_date__month=month
+                ).count()
+                birth = BirthRecord.objects.filter(
+                    hospital=request.user.info.hospital,
+                    birth_date__year=current_year,
+                    birth_date__month=month
+                ).count()
+
+            elif org == 'APC':
+                death = DeathCertificate.objects.filter(
+                    death_commune=request.user.info.apc.commune,
+                    death_date__year=current_year,
+                    death_date__month=month
+                ).count()
+                birth = BirthCertificate.objects.filter(
+                    birth_commune=request.user.info.apc.commune,
+                    birth_date__year=current_year,
+                    birth_date__month=month
+                ).count()
+
+            elif org == 'DSP':
+                death = DeathCertificate.objects.filter(
+                    death_wilaya=request.user.info.apc.wilaya,
+                    death_date__year=current_year,
+                    death_date__month=month
+                ).count()
+                birth = BirthCertificate.objects.filter(
+                    birth_wilaya=request.user.info.apc.wilaya,
+                    birth_date__year=current_year,
+                    birth_date__month=month
+                ).count()
+
+            stats_by_month[month] = {
+                "death": death,
+                "birth": birth,
+                "total": death + birth
+            }
+
+        # Serialize each month's data
+        serialized_data = {
+            month: StatisticSerializer(data).data for month, data in stats_by_month.items()
+        }
+
+        return Response(serialized_data, status=status.HTTP_200_OK)
 
 class StatisticViewV2(APIView):
     def get(self, request):
