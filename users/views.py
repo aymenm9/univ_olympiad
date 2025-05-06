@@ -37,36 +37,32 @@ class UsersView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         if self.request.user.info.Organization == 'Hospital':
-            return super().get_queryset().filter(info__hospital=request.user.info.hospital)
+            return super().get_queryset().filter(info__hospital=self.request.user.info.hospital)
         elif self.request.user.info.Organization == 'APC':
-            return super().get_queryset().filter(info__apc=request.user.info.apc)
+            return super().get_queryset().filter(info__apc=self.request.user.info.apc)
         elif self.request.user.info.Organization == 'DSP':
-            return super().get_queryset().filter(info__dsp=request.user.info.dsp)
+            return super().get_queryset().filter(info__dsp=self.request.user.info.dsp)
 
-
-    def post(self, request):
-        serializer = UserSerializer(data=request.data)
-        if serializer.is_valid():
-            user = User.objects.create_user(
-                username=serializer.validated_data['username'],
-                password=serializer.validated_data['password'],
-                first_name=serializer.validated_data['first_name'],
-                last_name=serializer.validated_data['last_name'],
-                email=serializer.validated_data['email']
-            )
-            user_info = UserInfo.objects.create(
+    def perform_create(self, serializer):
+        user = User.objects.create_user(
+            username=self.request.data['username'],
+            password=self.request.data['password'],
+            first_name=self.request.data['first_name'],
+            last_name=self.request.data['last_name'],
+            email=self.request.data['email']
+        )
+        user_info = UserInfo.objects.create(
                 user=user,
-                Organization=request.user.info.Organization,
-                role=request.data['role'],
-                hospital=request.user.info.hospital,
-                apc=request.user.info.apc,
-                dsp=request.user.info.dsp
+                Organization=self.request.user.info.Organization,
+                role=self.request.data['user_info']['role'],
+                hospital=self.request.user.info.hospital,
+                apc=self.request.user.info.apc,
+                dsp=self.request.user.info.dsp
             )
-            user_ser = UserSerializer(user)
-            return Response(user_ser.data, status=status.HTTP_201_CREATED)
+        user.info = user_info
+        user_ser = UserSerializer(user)
+        return Response(user_ser.data, status=status.HTTP_201_CREATED)
             
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
@@ -127,8 +123,8 @@ class CreateHospitalView(APIView):
                 dsp=request.user.info.dsp
             )
             admin = User.objects.create_user(
-                username=hospital_info['name'],
-                password=serializer.validated_data['password'],
+                username=serializer.validated_data['admin']['username'],
+                password=serializer.validated_data['admin']['password'],
                 first_name=hospital_info['name'],
                 last_name='Admin',
                 email=hospital_info['email']
@@ -178,8 +174,8 @@ class CreateAPCView(APIView):
                 dsp=request.user.info.dsp
             )
             admin = User.objects.create_user(
-                username=apc_info['name'],
-                password=serializer.validated_data['password'],
+                username=serializer.validated_data['admin']['username'],
+                password=serializer.validated_data['admin']['password'],
                 first_name=apc_info['name'],
                 last_name='Admin',
                 email=apc_info['email']

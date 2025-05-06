@@ -13,6 +13,7 @@ urlpatterns=[
     path('birth_certificate/<str:birth_number>/', views.BirthCertificateDetailView.as_view(), name='birth-certificate'),
     path('death_certificate/<str:death_number>/', views.DeathCertificateDetailView.as_view(), name='death-certificate'),
     path('statistics/', views.StatisticView.as_view(), name='statistics'),
+    path('statistics_v2/', views.StatisticViewV2.as_view(), name='statistics'),
 
 
     path('generate_death_ai/', views.AiView.as_view(), name='generate-death-ai'),

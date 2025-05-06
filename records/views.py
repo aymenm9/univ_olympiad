@@ -17,7 +17,7 @@ from django.utils import timezone
 # Create your views here.
 
 class BirthRecordView(generics.ListCreateAPIView):
-    permission_classes = [IsAuthenticated, IsHospital, IsWorker]
+    permission_classes = [IsAuthenticated, IsDSP_Hospital, IsWorker]
     serializer_class = BirthRecordSerializer
     queryset = BirthRecord.objects.all()
 
@@ -269,6 +269,22 @@ class StatisticView(APIView):
         })
         return Response(data.data,status=status.HTTP_200_OK)
         
+
+class StatisticViewV2(APIView):
+    def get(self, request):
+        deths_causes_count= {}
+        if request.user.info.Organization == 'Hospital':
+            deaths = DeathRecord.objects.filter(hospital=request.user.info.hospital).all()
+        elif request.user.info.Organization == 'APC':
+            deaths = DeathCertificate.objects.filter(death_commune=request.user.info.apc.commune).all()
+        elif request.user.info.Organization == 'DSP':
+            deaths = DeathCertificate.objects.filter(death_wilaya=request.user.info.apc.wilaya).all()
+        
+        for death in deaths:
+            deths_causes_count[death.death_cause] = deths_causes_count.get(death.death_cause, 0) + 1
+        
+        return Response(deths_causes_count, status=status.HTTP_200_OK)
+
 
 
 from .gen import generate

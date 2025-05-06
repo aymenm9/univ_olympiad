@@ -33,13 +33,16 @@ class DSPSerializer(serializers.ModelSerializer):
             'id': {'read_only': True},
         }
 
+class admin_info(serializers.Serializer):
+    username=serializers.CharField()
+    password=serializers.CharField()
 class CreateAPCSerializer(serializers.Serializer):
     apc = APCSerializer()
-    password = serializers.CharField()
+    admin = admin_info()
 
 class CreateHospitalSerializer(serializers.Serializer):
     hospital = hospitalSerializer()
-    password = serializers.CharField()
+    admin = admin_info()
 
 
 class chatHistorySerializer(serializers.Serializer):
@@ -57,12 +60,18 @@ class UserInfoSerializer(serializers.ModelSerializer):
         fields = '__all__'
         extra_kwargs = {
             'user': {'read_only': True},
+            'hospital':{'read_only': True},
+            'dsp':{'read_only': True},
+            'apc':{'read_only': True},
+            'Organization':{'read_only': True}
         }
+
 
 
 class UserSerializer(serializers.ModelSerializer):
     user_info = UserInfoSerializer(source='info')
-    organization_info = serializers.SerializerMethodField()
+    organization_info = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = User
         fields = ['id', 'username', 'password', 'email', 'first_name', 'last_name', 'user_info', 'organization_info']
@@ -73,6 +82,7 @@ class UserSerializer(serializers.ModelSerializer):
             'first_name': {'required': False},
             'last_name': {'required': False},
             'organization': {'read_only': True},
+
         }
 
     def get_organization_info(self, obj):
@@ -88,6 +98,7 @@ class UserSerializer(serializers.ModelSerializer):
                     'type': info.Organization
                 }
         return None
+    
 class LoginSerializer(serializers.Serializer):
     user = UserSerializer
     access = serializers.CharField()
