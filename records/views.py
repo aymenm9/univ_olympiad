@@ -4,7 +4,7 @@ from rest_framework import generics, filters
 from rest_framework.response import Response
 from rest_framework import status
 from .models import BirthRecord, DeathRecord, BirthCertificate, DeathCertificate
-from .serializer import BirthRecordSerializer, DeathRecordSerializer, BirthCertificateSerializer, DeathCertificateSerializer, StatisticSerializer
+from .serializer import BirthRecordSerializer, DeathRecordSerializer, BirthCertificateSerializer, DeathCertificateSerializer, StatisticSerializer, PublicBirthCertificateSerializer, PublicDeathCertificateSerializer
 from rest_framework.permissions import IsAuthenticated
 from users.users_permissions import IsHospital, IsAPC, IsDSP, IsDSP_Hospital, IsWorker, IsAdmin, IsDSP_APC
 from drf_spectacular.utils import extend_schema
@@ -242,6 +242,77 @@ class DeathCertificatePDf(APIView):
         
         
         data = generate_death_certificate_pdf(death_certificate, request.user)
+        signed_data  = sign_pdf(data)
+        # Save the signed PDF to a file or return it as a response
+        response = HttpResponse(signed_data['pdf'], content_type='application/pdf')
+        filename = f"death_certificate_{death_number}.pdf"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        response['X-Signature'] = signed_data['signature']
+        return response
+
+
+class PublicBirthCertificatePDf(APIView):
+    @extend_schema(
+        request=PublicBirthCertificateSerializer,
+        responses={200: OpenApiTypes.BINARY},
+        description="Generate a birth certificate PDF for the given birth_number.",
+    )
+    def post(self,request):
+        serializer = PublicBirthCertificateSerializer(data=request.data)
+        if serializer.is_valid():
+            birth_number = serializer.validated_data['birth_number']
+            try:
+                birth_certificate = BirthCertificate.objects.get(birth_number=birth_number)
+            except BirthCertificate.DoesNotExist:
+                return Response({"error": "Birth Certificate not found."}, status=status.HTTP_404_NOT_FOUND)
+            
+            if(
+                birth_certificate.first_name != serializer.validated_data['first_name'] 
+                or birth_certificate.last_name != serializer.validated_data['last_name'] 
+                or birth_certificate.birth_date != serializer.validated_data['birth_date'] 
+                or birth_certificate.birth_wilaya != serializer.validated_data['birth_wilaya'] 
+                or birth_certificate.father_name != serializer.validated_data['father_name'] 
+                or birth_certificate.mother_name != serializer.validated_data['mother_name'] 
+            ):
+                return Response({"error": "Birth Certificate not found."}, status=status.HTTP_404_NOT_FOUND)
+            
+            data = generate_birth_certificate_pdf(birth_certificate)
+            signed_data  = sign_pdf(data)
+            # Save the signed PDF to a file or return it as a response
+            response = HttpResponse(signed_data['pdf'], content_type='application/pdf')
+            filename = f"birth_certificate_{birth_number}.pdf"
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            response['X-Signature'] = signed_data['signature']
+            return response
+
+class PublicDeathCertificatePDf(APIView):
+    @extend_schema(
+        request=PublicDeathCertificateSerializer,
+        responses={200: OpenApiTypes.BINARY},
+        description="Generate a death certificate PDF for the given death_number.",
+    )
+    def post(self,request):
+        serializer = PublicDeathCertificateSerializer(data=request.data)
+        if serializer.is_valid():
+            death_number = serializer.validated_data['death_number']
+            try:
+                death_certificate = DeathCertificate.objects.get(death_number=death_number)
+            except DeathCertificate.DoesNotExist:
+                return Response({"error": "Death Certificate not found."}, status=status.HTTP_404_NOT_FOUND)
+            
+            if(
+                death_certificate.first_name != serializer.validated_data['first_name'] 
+                or death_certificate.last_name != serializer.validated_data['last_name'] 
+                or death_certificate.birth_date != serializer.validated_data['birth_date'] 
+                or death_certificate.death_date != serializer.validated_data['death_date'] 
+                or death_certificate.death_wilaya != serializer.validated_data['death_wilaya'] 
+                or death_certificate.father_name != serializer.validated_data['father_name'] 
+                or death_certificate.mother_name != serializer.validated_data['mother_name']) : 
+                return Response({"error": "one of the Invalid input."}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"error": "Invalid input."}, status=status.HTTP_400_BAD_REQUEST)
+
+        data = generate_death_certificate_pdf(death_certificate)
         signed_data  = sign_pdf(data)
         # Save the signed PDF to a file or return it as a response
         response = HttpResponse(signed_data['pdf'], content_type='application/pdf')

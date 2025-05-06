@@ -15,7 +15,8 @@ urlpatterns=[
     path('statistics/', views.StatisticView.as_view(), name='statistics'),
     path('statistics/by_month/', views.MonthlyStatisticView.as_view(), name='statistics'),
     path('statistics_v2/', views.StatisticViewV2.as_view(), name='statistics'),
-
+    path('public_birth_certificate/', views.PublicBirthCertificatePDf.as_view(), name='public-birth-certificate'),
+    path('public_death_certificate/', views.PublicDeathCertificatePDf.as_view(), name='public-death-certificate'),
 
     path('generate_death_ai/', views.AiView.as_view(), name='generate-death-ai'),
    

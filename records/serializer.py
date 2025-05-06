@@ -46,3 +46,23 @@ class StatisticSerializer(serializers.Serializer):
     death = serializers.IntegerField()
     birth = serializers.IntegerField()
     total = serializers.IntegerField()
+
+
+class PublicDeathCertificateSerializer(serializers.Serializer):
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+    mother_name = serializers.CharField()
+    father_name = serializers.CharField()
+    birth_date = serializers.DateField()
+    death_date = serializers.DateField()
+    death_number = serializers.CharField()
+    death_wilaya = serializers.CharField()
+
+class PublicBirthCertificateSerializer(serializers.Serializer):
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+    mother_name = serializers.CharField()
+    father_name = serializers.CharField()
+    birth_date = serializers.DateField()
+    birth_number = serializers.CharField()
+    birth_wilaya = serializers.CharField()

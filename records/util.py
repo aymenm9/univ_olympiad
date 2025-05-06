@@ -15,7 +15,7 @@ import base64
 from time import localtime
 from reportlab.lib.units import cm
 
-def generate_birth_certificate_pdf(birth_certificate, user):
+def generate_birth_certificate_pdf(birth_certificate, user=None):
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
     width, height = A4
@@ -78,7 +78,10 @@ def generate_birth_certificate_pdf(birth_certificate, user):
     
     # Signature at bottom
     c.setFont("Helvetica-Oblique", 10)
-    signature_text = f"Signed by: {user.info.get_organization().name}-{user.info.Organization} - {user.username}"
+    if user:
+        signature_text = f"Signed by: {user.info.get_organization().name}-{user.info.Organization} - {user.username}"
+    else:
+        signature_text = "Signature"
     timestamp = datetime.datetime.now().strftime('%d-%m-%Y %H:%M:%S')
     
     c.drawRightString(margin_right, 2 * cm, signature_text)
@@ -90,7 +93,7 @@ def generate_birth_certificate_pdf(birth_certificate, user):
     buffer.seek(0)
     return buffer
 
-def generate_death_certificate_pdf(death_certificate, user):
+def generate_death_certificate_pdf(death_certificate, user=None):
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
     width, height = A4
@@ -169,7 +172,10 @@ def generate_death_certificate_pdf(death_certificate, user):
 
     # Signature at the bottom
     c.setFont("Helvetica-Oblique", 10)
-    signature_text = f"Signed by: {user.info.get_organization().name}-{user.info.Organization} - {user.username}"
+    if user:
+        signature_text = f"Signed by: {user.info.get_organization().name}-{user.info.Organization} - {user.username}"
+    else:
+        signature_text = "Signature"
     timestamp = datetime.datetime.now().strftime('%d-%m-%Y %H:%M:%S')
 
     c.drawRightString(margin_right, 2 * cm, signature_text)
