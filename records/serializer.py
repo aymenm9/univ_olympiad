@@ -85,7 +85,9 @@ class DeathCertificateUpdateRequestSerializer(serializers.ModelSerializer):
         read_only_fields = ['user','id','original_certificate','updat_data','court']
     
 class BurialPermitSerializer(serializers.ModelSerializer):
+    death_Certificate = DeathCertificateSerializer(source='certificate')
+    death_record = DeathRecordSerializer(source='record')
     class Meta:
         model = BurialPermit
         fields = '__all__'
-        read_only_fields = ['user','id','certificate']
+        read_only_fields = ['user','id','certificate','death_Certificate','record','death_record']
