@@ -78,6 +78,7 @@ class UserInfoSerializer(serializers.ModelSerializer):
             'hospital':{'read_only': True},
             'dsp':{'read_only': True},
             'apc':{'read_only': True},
+            'court':{'read_only': True},
             'Organization':{'read_only': True}
         }
 
