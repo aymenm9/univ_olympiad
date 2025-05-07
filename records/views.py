@@ -297,7 +297,7 @@ class BurialPermitView(generics.ListAPIView):
 
     def get_queryset(self):
         if self.request.user.info.Organization == 'Court':
-            return BurialPermit.objects.filter(record__Hospital__wilaya=self.request.user.info.get_organization().wilaya).filter(approved=False)
+            return BurialPermit.objects.filter(record__hospital__wilaya=self.request.user.info.get_organization().wilaya).filter(approved=False)
         return BurialPermit.objects.filter(approved=True)
 
 class BurialPermitconfirmView(APIView):
