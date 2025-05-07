@@ -100,6 +100,11 @@ class BirthRecordDetailView(generics.RetrieveUpdateDestroyAPIView):
         certificate.mother_name = birth_record.mother_name
         certificate.save()        
         return birth_record
+    
+    def perform_destroy(self, instance):
+        certificate = BirthCertificate.objects.get(birth_number=instance.birth_number)
+        certificate.delete()
+        instance.delete()
 
 class DeathRecordView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
@@ -170,7 +175,10 @@ class DeathRecordDetailView(generics.RetrieveUpdateDestroyAPIView):
         if certificate.is_valid:
             return Response({"error": "Certificate is already valid."}, status=status.HTTP_400_BAD_REQUEST)
         return serializer.save(user=self.request.user, hospital=self.request.user.info.hospital)
-
+    def perform_destroy(self, instance):
+        certificate = DeathCertificate.objects.get(death_number=instance.death_number)
+        certificate.delete()
+        instance.delete()
 from .util import generate_birth_certificate_pdf, generate_death_certificate_pdf, sign_pdf, generate_burial_permit_pdf
 from drf_spectacular.types import OpenApiTypes
 
