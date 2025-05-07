@@ -3,10 +3,16 @@ from rest_framework.views import APIView
 from rest_framework import generics, filters
 from rest_framework.response import Response
 from rest_framework import status
-from .models import BirthRecord, DeathRecord, BirthCertificate, DeathCertificate
-from .serializer import BirthRecordSerializer, DeathRecordSerializer, BirthCertificateSerializer, DeathCertificateSerializer, StatisticSerializer, PublicBirthCertificateSerializer, PublicDeathCertificateSerializer
+from .models import BirthRecord, DeathRecord, BirthCertificate, DeathCertificate, BurialPermit
+from .serializer import (BirthRecordSerializer, DeathRecordSerializer, 
+                         BirthCertificateSerializer, DeathCertificateSerializer, 
+                         StatisticSerializer, PublicBirthCertificateSerializer, 
+                         PublicDeathCertificateSerializer,
+                         BirthCertificateUpdateRequestSerializer,
+                         DeathCertificateUpdateRequestSerializer,
+                         BurialPermitSerializer)
 from rest_framework.permissions import IsAuthenticated
-from users.users_permissions import IsHospital, IsAPC, IsDSP, IsDSP_Hospital, IsWorker, IsAdmin, IsDSP_APC
+from users.users_permissions import IsHospital, IsAPC, IsDSP, IsDSP_Hospital, IsWorker, IsAdmin, IsDSP_APC, IsDSP_Court, IsCourt
 from drf_spectacular.utils import extend_schema
 from dotenv import load_dotenv
 import os
@@ -72,6 +78,9 @@ class BirthRecordDetailView(generics.RetrieveUpdateDestroyAPIView):
             return super().get_queryset().filter(hospital__dsp=self.request.user.info.dsp)
         return super().get_queryset().filter(hospital=self.request.user.info.hospital)
     def perform_update(self, serializer):
+        certificate = BirthCertificate.objects.get(birth_number=self.kwargs['birth_number'])
+        if certificate.is_valid:
+            return Response({"error": "Certificate is already valid."}, status=status.HTTP_400_BAD_REQUEST)
         return serializer.save(user=self.request.user, hospital=self.request.user.info.hospital)
 
 class DeathRecordView(generics.ListCreateAPIView):
@@ -138,9 +147,12 @@ class DeathRecordDetailView(generics.RetrieveUpdateDestroyAPIView):
             return super().get_queryset().filter(hospital__dsp=self.request.user.info.dsp)
         return super().get_queryset().filter(hospital=self.request.user.info.hospital)
     def perform_update(self, serializer):
+        certificate = DeathCertificate.objects.get(death_number=self.kwargs['death_number'])
+        if certificate.is_valid:
+            return Response({"error": "Certificate is already valid."}, status=status.HTTP_400_BAD_REQUEST)
         return serializer.save(user=self.request.user, hospital=self.request.user.info.hospital)
 
-from .util import generate_birth_certificate_pdf, generate_death_certificate_pdf, sign_pdf
+from .util import generate_birth_certificate_pdf, generate_death_certificate_pdf, sign_pdf, generate_burial_permit_pdf
 from drf_spectacular.types import OpenApiTypes
 
 
@@ -222,10 +234,17 @@ class DeathCertificateConfirm(APIView):
         except DeathCertificate.DoesNotExist:
             return Response({"error": "death Certificate not found."}, status=status.HTTP_404_NOT_FOUND)
         
-        # Validate the birth certificate
+        death_record = DeathRecord.objects.get(death_number=death_number)
         death_certificate.is_valid = True
         death_certificate.user = request.user
         death_certificate.save()
+        approved = death_record.death_type == 'natural'
+        permit = BurialPermit.objects.create(
+            user=request.user,
+            record=death_record,
+            certificate=death_certificate,
+            approved=approved
+        )
         return Response({"message": "death Certificate is valid."}, status=status.HTTP_200_OK)
 class DeathCertificatePDf(APIView):
     permission_classes = [IsAuthenticated, IsWorker]
@@ -250,6 +269,52 @@ class DeathCertificatePDf(APIView):
         response['X-Signature'] = signed_data['signature']
         return response
 
+class BurialPermitView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated, IsWorker]
+    serializer_class = BurialPermitSerializer
+    queryset = BurialPermit.objects.all()
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['record__death_number', 'record__first_name','record__last_name']
+
+    def get_queryset(self):
+        if self.request.user.info.Organization == 'Court':
+            return BurialPermit.objects.filter(record__Hospital__wilaya=self.request.user.info.get_organization().wilaya).filter(approved=False)
+        return BurialPermit.objects.filter(approved=True)
+
+class BurialPermitconfirmView(APIView):
+    permission_classes = [IsAuthenticated, IsWorker, IsCourt]
+    def post(self, request, death_number):
+        try:
+            burial_permit = BurialPermit.objects.get(record__death_number=death_number)
+        except BurialPermit.DoesNotExist:
+            return Response({"error": "Burial Permit not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        burial_permit.is_valid = True
+        burial_permit.user = request.user
+        burial_permit.save()
+        return Response({"message": "Burial Permit is valid."}, status=status.HTTP_200_OK)
+
+class BurialPermitPdfView(APIView):
+    permission_classes = [IsAuthenticated, IsWorker]
+    @extend_schema(
+        request=None,
+        responses={200: OpenApiTypes.BINARY},
+        description="Generate a Burial Permit PDF for the given death_number.",
+    )
+    def get(self,request, death_number):
+        try:
+            burial_permit = BurialPermit.objects.get(record__death_number=death_number)
+        except BurialPermit.DoesNotExist:
+            return Response({"error": "Burial Permit not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        data = generate_burial_permit_pdf(burial_permit, request.user)
+        signed_data  = sign_pdf(data)
+        # Save the signed PDF to a file or return it as a response
+        response = HttpResponse(signed_data['pdf'], content_type='application/pdf')
+        filename = f"burial_permit_{death_number}.pdf"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        response['X-Signature'] = signed_data['signature']
+        return response
 
 class PublicBirthCertificatePDf(APIView):
     @extend_schema(

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import BirthRecord, DeathRecord, BirthCertificate, DeathCertificate
+from .models import BirthRecord, DeathRecord, BirthCertificate, DeathCertificate, BurialPermit, BirthCertificateUpdateRequest, DeathCertificateUpdateRequest
 
 class BirthRecordSerializer(serializers.ModelSerializer):
     class Meta:
@@ -66,3 +66,26 @@ class PublicBirthCertificateSerializer(serializers.Serializer):
     birth_date = serializers.DateField()
     birth_number = serializers.CharField()
     birth_wilaya = serializers.CharField()
+
+
+class BirthCertificateUpdateRequestSerializer(serializers.ModelSerializer):
+    original_certificate= BirthCertificateSerializer(source='certificate')
+
+    class Meta:
+        model = BirthCertificateUpdateRequest
+        fields = '__all__'
+        read_only_fields = ['user','id','original_certificate','updat_data','court']
+    
+class DeathCertificateUpdateRequestSerializer(serializers.ModelSerializer):
+    original_certificate= DeathCertificateSerializer(source='certificate')
+
+    class Meta:
+        model = DeathCertificateUpdateRequest
+        fields = '__all__'
+        read_only_fields = ['user','id','original_certificate','updat_data','court']
+    
+class BurialPermitSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BurialPermit
+        fields = '__all__'
+        read_only_fields = ['user','id','certificate']

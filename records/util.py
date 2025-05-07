@@ -187,13 +187,97 @@ def generate_death_certificate_pdf(death_certificate, user=None):
     buffer.seek(0)
     return buffer
 
+def generate_burial_permit_pdf(burial_permit, user=None):
+    death_certificate = burial_permit.certificate
+
+    buffer = BytesIO()
+    c = canvas.Canvas(buffer, pagesize=A4)
+    width, height = A4
+
+    margin_left = 2 * cm
+    margin_right = width - 2 * cm
+    y = height - 3 * cm
+
+    c.setFont("Helvetica-Bold", 22)
+    c.drawCentredString(width / 2, y, "People's Democratic Republic of Algeria")
+    y -= 1 * cm
+
+    # Title
+    c.setFont("Helvetica-Bold", 20)
+    c.drawCentredString(width / 2, y, "BURIAL PERMIT")
+    y -= 2 * cm
+
+    # Section: Deceased Info
+    c.setFont("Helvetica-Bold", 14)
+    c.drawString(margin_left, y, "Deceased Information")
+    y -= 1 * cm
+
+    c.setFont("Helvetica", 12)
+    c.drawString(margin_left, y, f"First Name: {death_certificate.first_name}")
+    y -= 0.8 * cm
+    c.drawString(margin_left, y, f"Last Name: {death_certificate.last_name}")
+    y -= 0.8 * cm
+    c.drawString(margin_left, y, f"Sex: {death_certificate.sex}")
+    y -= 0.8 * cm
+    c.drawString(margin_left, y, f"Date of Birth: {death_certificate.birth_date}")
+    y -= 0.8 * cm
+    c.drawString(margin_left, y, f"Date of Death: {death_certificate.death_date}")
+    y -= 1 * cm
+
+    # Section: Death Location
+    c.setFont("Helvetica-Bold", 14)
+    c.drawString(margin_left, y, "Death Location")
+    y -= 1 * cm
+
+    c.setFont("Helvetica", 12)
+    c.drawString(margin_left, y, f"Wilaya: {death_certificate.death_wilaya}")
+    y -= 0.8 * cm
+    c.drawString(margin_left, y, f"Commune: {death_certificate.death_commune}")
+    y -= 1 * cm
+
+    # Section: Family Info
+    c.setFont("Helvetica-Bold", 14)
+    c.drawString(margin_left, y, "Family Information")
+    y -= 1 * cm
+
+    c.setFont("Helvetica", 12)
+    c.drawString(margin_left, y, f"Father's Name: {death_certificate.father_name}")
+    y -= 0.8 * cm
+    c.drawString(margin_left, y, f"Mother's Name: {death_certificate.mother_name}")
+    y -= 1 * cm
+
+    # Section: Approval Info
+    c.setFont("Helvetica-Bold", 14)
+    c.drawString(margin_left, y, "Burial Permit Info")
+    y -= 1 * cm
+
+    c.setFont("Helvetica", 12)
+    c.drawString(margin_left, y, f"Approved: {'Yes' if burial_permit.approved else 'No'}")
+    y -= 0.8 * cm
+    c.drawString(margin_left, y, f"Death Certificate Number: {death_certificate.certificate_number}")
+    y -= 1 * cm
+
+    # Signature
+    c.setFont("Helvetica-Oblique", 10)
+    if user:
+        signature_text = f"Signed by: {user.info.get_organization().name}-{user.info.Organization} - {user.username}"
+    else:
+        signature_text = "Signature"
+    timestamp = datetime.datetime.now().strftime('%d-%m-%Y %H:%M:%S')
+
+    c.drawRightString(margin_right, 2 * cm, signature_text)
+    c.drawRightString(margin_right, 1.5 * cm, f"Date: {timestamp}")
+
+    # Finalize
+    c.showPage()
+    c.save()
+    buffer.seek(0)
+    return buffer
+
 
 
 def sign_pdf(pdf_buffer):
 
-    # In production, you would load your private key from a secure location
-    # For demonstration purposes, we generate a new key each time
-    # In a real app, use a properly stored private key
     private_key = rsa.generate_private_key(
         public_exponent=65537,
         key_size=2048,

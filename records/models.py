@@ -113,6 +113,7 @@ class DeathCertificate(models.Model):
 
 class BirthCertificateUpdateRequest(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    court = models.ForeignKey(Court, on_delete=models.SET_NULL, null=True)
     certificate = models.ForeignKey(BirthCertificate, on_delete=models.SET_NULL, null=True)
     updat_data = models.JSONField() 
     approved = models.BooleanField(default=False)
@@ -129,6 +130,17 @@ class DeathCertificateUpdateRequest(models.Model):
 
     def __str__(self):
         return f"{self.certificate.first_name} {self.certificate.last_name} - death Certificate Update Request"
+    
+
+class BurialPermit(models.Model):
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    certificate = models.ForeignKey(DeathCertificate, on_delete=models.SET_NULL, null=True)
+    record = models.ForeignKey(DeathRecord, on_delete=models.SET_NULL, null=True)
+    approved = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.certificate.first_name} {self.certificate.last_name} - Burial Permit"
+
 # -----------------------------------------------------
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver

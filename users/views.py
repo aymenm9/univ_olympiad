@@ -264,7 +264,6 @@ class CourtView(generics.ListAPIView):
 
 class ChatbotView(APIView):
     permission_classes = [IsAuthenticated]
-
     @extend_schema(
         request=chatHistorySerializer,
         responses={200: chatHistorySerializer},
