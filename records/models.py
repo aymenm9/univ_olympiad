@@ -50,6 +50,15 @@ class DeathRecord(models.Model):
     mother_name = models.CharField(max_length=100)
     birth_number = models.CharField(max_length=15, unique=True)
     death_number = models.CharField(max_length=15, unique=True)
+    death_type = models.CharField(
+    max_length=30,
+    choices=[
+        ('natural', 'Natural cause'),
+        ('violent', 'Violent cause'),
+        ('undetermined', 'Undetermined cause'),
+    ],
+    default='natural'
+)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} - Death Record"
