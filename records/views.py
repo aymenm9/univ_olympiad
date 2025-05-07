@@ -32,19 +32,8 @@ class BirthRecordView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         if self.request.user.info.Organization == 'DSP':
-            queryset= super().get_queryset().filter(hospital__dsp=self.request.user.info.dsp)
-        if self.request.user.info.Organization == 'APC':
-            queryset= super().get_queryset().filter(hospital__apc=self.request.user.info.apc)
-        else :
-            queryset=  super().get_queryset().filter(hospital=self.request.user.info.hospital)
-        if self.request.user.info.role == 'Guest':
-            org_name = self.request.user.info.get_organization().name
-            for obj in queryset:
-                obj.first_name = org_name
-                obj.last_name = org_name
-                obj.father_name = org_name
-                obj.mother_name = org_name
-        return queryset
+            return super().get_queryset().filter(hospital__dsp=self.request.user.info.dsp)
+        return super().get_queryset().filter(hospital=self.request.user.info.hospital)
 
     def perform_create(self, serializer):
         user = self.request.user
@@ -86,19 +75,8 @@ class BirthRecordDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         if self.request.user.info.Organization == 'DSP':
-            queryset= super().get_queryset().filter(hospital__dsp=self.request.user.info.dsp)
-        if self.request.user.info.Organization == 'APC':
-            queryset= super().get_queryset().filter(hospital__apc=self.request.user.info.apc)
-        else :
-            queryset=  super().get_queryset().filter(hospital=self.request.user.info.hospital)
-        if self.request.user.info.role == 'Guest':
-            org_name = self.request.user.info.get_organization().name
-            for obj in queryset:
-                obj.first_name = org_name
-                obj.last_name = org_name
-                obj.father_name = org_name
-                obj.mother_name = org_name
-        return queryset
+            return super().get_queryset().filter(hospital__dsp=self.request.user.info.dsp)
+        return super().get_queryset().filter(hospital=self.request.user.info.hospital)
     def perform_update(self, serializer):
         certificate = BirthCertificate.objects.get(birth_number=self.kwargs['birth_number'])
         if certificate.is_valid:
@@ -132,19 +110,8 @@ class DeathRecordView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         if self.request.user.info.Organization == 'DSP':
-            queryset= super().get_queryset().filter(hospital__dsp=self.request.user.info.dsp)
-        if self.request.user.info.Organization == 'APC':
-            queryset= super().get_queryset().filter(hospital__apc=self.request.user.info.apc)
-        else :
-            queryset=  super().get_queryset().filter(hospital=self.request.user.info.hospital)
-        if self.request.user.info.role == 'Guest':
-            org_name = self.request.user.info.get_organization().name
-            for obj in queryset:
-                obj.first_name = org_name
-                obj.last_name = org_name
-                obj.father_name = org_name
-                obj.mother_name = org_name
-        return queryset
+            return super().get_queryset().filter(hospital__dsp=self.request.user.info.dsp)
+        return super().get_queryset().filter(hospital=self.request.user.info.hospital)
 
     def perform_create(self, serializer):
         user = self.request.user
@@ -195,19 +162,8 @@ class DeathRecordDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         if self.request.user.info.Organization == 'DSP':
-            queryset= super().get_queryset().filter(hospital__dsp=self.request.user.info.dsp)
-        if self.request.user.info.Organization == 'APC':
-            queryset= super().get_queryset().filter(hospital__apc=self.request.user.info.apc)
-        else :
-            queryset=  super().get_queryset().filter(hospital=self.request.user.info.hospital)
-        if self.request.user.info.role == 'Guest':
-            org_name = self.request.user.info.get_organization().name
-            for obj in queryset:
-                obj.first_name = org_name
-                obj.last_name = org_name
-                obj.father_name = org_name
-                obj.mother_name = org_name
-        return queryset
+            return super().get_queryset().filter(hospital__dsp=self.request.user.info.dsp)
+        return super().get_queryset().filter(hospital=self.request.user.info.hospital)
 
     def perform_update(self, serializer):
         certificate = DeathCertificate.objects.get(death_number=self.kwargs['death_number'])
