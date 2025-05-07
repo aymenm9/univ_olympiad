@@ -26,7 +26,7 @@ def generate(deths)->str:
         ),
     ]
     generate_content_config = types.GenerateContentConfig(
-        response_mime_type="application/json",
+        response_mime_type="text/plain",
         system_instruction=[
             types.Part.from_text(text="""you will get alist of deaths records, give a short analytic summary on tham """),
         ],
