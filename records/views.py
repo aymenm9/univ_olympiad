@@ -24,7 +24,7 @@ from collections import OrderedDict
 # Create your views here.
 
 class BirthRecordView(generics.ListCreateAPIView):
-    permission_classes = [IsAuthenticated, IsWorker]
+    permission_classes = [IsAuthenticated]
     serializer_class = BirthRecordSerializer
     queryset = BirthRecord.objects.all()
     filter_backends = [filters.SearchFilter]
@@ -32,10 +32,19 @@ class BirthRecordView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         if self.request.user.info.Organization == 'DSP':
-            return super().get_queryset().filter(hospital__dsp=self.request.user.info.dsp)
+            queryset= super().get_queryset().filter(hospital__dsp=self.request.user.info.dsp)
         if self.request.user.info.Organization == 'APC':
-            return super().get_queryset().filter(hospital__apc=self.request.user.info.apc)
-        return super().get_queryset().filter(hospital=self.request.user.info.hospital)
+            queryset= super().get_queryset().filter(hospital__apc=self.request.user.info.apc)
+        else :
+            queryset=  super().get_queryset().filter(hospital=self.request.user.info.hospital)
+        if self.request.user.info.role == 'Guest':
+            org_name = self.request.user.info.get_organization().name
+            for obj in queryset:
+                obj.first_name = org_name
+                obj.last_name = org_name
+                obj.father_name = org_name
+                obj.mother_name = org_name
+        return queryset
 
     def perform_create(self, serializer):
         user = self.request.user
@@ -70,17 +79,26 @@ class BirthRecordView(generics.ListCreateAPIView):
         return birth_record
     
 class BirthRecordDetailView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [IsAuthenticated, IsWorker]
+    permission_classes = [IsAuthenticated]
     serializer_class = BirthRecordSerializer
     queryset = BirthRecord.objects.all()
     lookup_field = 'birth_number'
 
     def get_queryset(self):
         if self.request.user.info.Organization == 'DSP':
-            return super().get_queryset().filter(hospital__dsp=self.request.user.info.dsp)
+            queryset= super().get_queryset().filter(hospital__dsp=self.request.user.info.dsp)
         if self.request.user.info.Organization == 'APC':
-            return super().get_queryset().filter(hospital__apc=self.request.user.info.apc)
-        return super().get_queryset().filter(hospital=self.request.user.info.hospital)
+            queryset= super().get_queryset().filter(hospital__apc=self.request.user.info.apc)
+        else :
+            queryset=  super().get_queryset().filter(hospital=self.request.user.info.hospital)
+        if self.request.user.info.role == 'Guest':
+            org_name = self.request.user.info.get_organization().name
+            for obj in queryset:
+                obj.first_name = org_name
+                obj.last_name = org_name
+                obj.father_name = org_name
+                obj.mother_name = org_name
+        return queryset
     def perform_update(self, serializer):
         certificate = BirthCertificate.objects.get(birth_number=self.kwargs['birth_number'])
         if certificate.is_valid:
@@ -106,7 +124,7 @@ class BirthRecordDetailView(generics.RetrieveUpdateDestroyAPIView):
         return birth_record
 
 class DeathRecordView(generics.ListCreateAPIView):
-    permission_classes = [IsAuthenticated, IsWorker]
+    permission_classes = [IsAuthenticated]
     serializer_class = DeathRecordSerializer
     queryset = DeathRecord.objects.all()
     filter_backends = [filters.SearchFilter]
@@ -114,10 +132,19 @@ class DeathRecordView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         if self.request.user.info.Organization == 'DSP':
-            return super().get_queryset().filter(hospital__dsp=self.request.user.info.dsp)
+            queryset= super().get_queryset().filter(hospital__dsp=self.request.user.info.dsp)
         if self.request.user.info.Organization == 'APC':
-            return super().get_queryset().filter(hospital__apc=self.request.user.info.apc)
-        return super().get_queryset().filter(hospital=self.request.user.info.hospital)
+            queryset= super().get_queryset().filter(hospital__apc=self.request.user.info.apc)
+        else :
+            queryset=  super().get_queryset().filter(hospital=self.request.user.info.hospital)
+        if self.request.user.info.role == 'Guest':
+            org_name = self.request.user.info.get_organization().name
+            for obj in queryset:
+                obj.first_name = org_name
+                obj.last_name = org_name
+                obj.father_name = org_name
+                obj.mother_name = org_name
+        return queryset
 
     def perform_create(self, serializer):
         user = self.request.user
@@ -161,17 +188,27 @@ class DeathRecordView(generics.ListCreateAPIView):
 
 
 class DeathRecordDetailView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [IsAuthenticated, IsWorker]
+    permission_classes = [IsAuthenticated]
     serializer_class = DeathRecordSerializer
     queryset = DeathRecord.objects.all()
     lookup_field = 'death_number'
 
     def get_queryset(self):
         if self.request.user.info.Organization == 'DSP':
-            return super().get_queryset().filter(hospital__dsp=self.request.user.info.dsp)
+            queryset= super().get_queryset().filter(hospital__dsp=self.request.user.info.dsp)
         if self.request.user.info.Organization == 'APC':
-            return super().get_queryset().filter(hospital__apc=self.request.user.info.apc)
-        return super().get_queryset().filter(hospital=self.request.user.info.hospital)
+            queryset= super().get_queryset().filter(hospital__apc=self.request.user.info.apc)
+        else :
+            queryset=  super().get_queryset().filter(hospital=self.request.user.info.hospital)
+        if self.request.user.info.role == 'Guest':
+            org_name = self.request.user.info.get_organization().name
+            for obj in queryset:
+                obj.first_name = org_name
+                obj.last_name = org_name
+                obj.father_name = org_name
+                obj.mother_name = org_name
+        return queryset
+
     def perform_update(self, serializer):
         certificate = DeathCertificate.objects.get(death_number=self.kwargs['death_number'])
         if certificate.is_valid:
@@ -422,7 +459,7 @@ class PublicDeathCertificatePDf(APIView):
 
 
 class StatisticView(APIView):
-    permission_classes=[IsAuthenticated, IsWorker]
+    permission_classes=[IsAuthenticated]
 
     @extend_schema(
         request=None,
@@ -451,7 +488,7 @@ class StatisticView(APIView):
         return Response(data.data,status=status.HTTP_200_OK)
         
 class MonthlyStatisticView(APIView):
-    permission_classes = [IsAuthenticated, IsWorker]
+    permission_classes = [IsAuthenticated]
 
     @extend_schema(
         request=None,
@@ -513,6 +550,7 @@ class MonthlyStatisticView(APIView):
         return Response(serialized_data, status=status.HTTP_200_OK)
 
 class StatisticViewV2(APIView):
+    permission_classes=[IsAuthenticated]
     def get(self, request):
         deths_causes_count= {}
         if request.user.info.Organization == 'Hospital':

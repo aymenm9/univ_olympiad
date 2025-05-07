@@ -221,7 +221,7 @@ class CreateCourtView(APIView):
     def post(self, request):
         serializer = CreateCourtSerializer(data=request.data)
         if serializer.is_valid():
-            court_info = serializer.validated_data['apc']
+            court_info = serializer.validated_data['court']
             court = Court.objects.create(
                 name=court_info['name'],
                 wilaya=request.user.info.dsp.wilaya,
@@ -239,7 +239,7 @@ class CreateCourtView(APIView):
             )
             user_info = UserInfo.objects.create(
                 user=admin,
-                Organization='APC',
+                Organization='Court',
                 court=court,
                 role='Admin'
             )
