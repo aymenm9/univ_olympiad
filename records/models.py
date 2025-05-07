@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from users.models import Hospital
+from users.models import Hospital, Court
 # Create your models here.
 
 
@@ -101,6 +101,25 @@ class DeathCertificate(models.Model):
     def __str__(self):
         return f"{self.first_name} {self.last_name} - Death Certificate"
 
+
+class BirthCertificateUpdateRequest(models.Model):
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    certificate = models.ForeignKey(BirthCertificate, on_delete=models.SET_NULL, null=True)
+    updat_data = models.JSONField() 
+    approved = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.certificate.first_name} {self.certificate.last_name} - Birth Certificate Update Request"
+
+class DeathCertificateUpdateRequest(models.Model):
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    court = models.ForeignKey(Court, on_delete=models.SET_NULL, null=True)
+    certificate = models.ForeignKey(DeathCertificate, on_delete=models.SET_NULL, null=True)
+    updat_data = models.JSONField() 
+    approved = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.certificate.first_name} {self.certificate.last_name} - death Certificate Update Request"
 # -----------------------------------------------------
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver

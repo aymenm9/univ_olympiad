@@ -37,16 +37,29 @@ class Hospital(models.Model):
 
     def __str__(self):
         return f'Hospital of : {self.name} wilaya: {self.wilaya} commune: {self.commune}'
+
+class Court(models.Model):
+    dsp = models.ForeignKey(DSP, on_delete=models.CASCADE, related_name='court')
+    name = models.CharField(max_length=100)
+    wilaya = models.CharField(max_length=255)
+    address = models.CharField(max_length=255)
+    phone_number = models.CharField(max_length=10)
+    email = models.EmailField()
+
+    def __str__(self):
+        return f'Court of : {self.name} wilaya: {self.wilaya}'
 class UserInfo(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='info')
     Organization = models.CharField(choices=[
         ('Hospital','Hospital'),
         ('DSP','DSP'),
-        ('APC','APC')
+        ('APC','APC'),
+        ('Court','Court'),
     ], max_length=50, default='Hospital')
     hospital = models.ForeignKey(Hospital, on_delete=models.SET_NULL, null=True, blank=True, related_name='employees')
     dsp = models.ForeignKey(DSP, on_delete=models.SET_NULL, null=True, blank=True, related_name='employees')
     apc = models.ForeignKey(APC, on_delete=models.SET_NULL, null=True, blank=True, related_name='employees')
+    court = models.ForeignKey(Court, on_delete=models.SET_NULL, null=True, blank=True, related_name='employees')
     role = models.CharField(choices=[
         ('Admin', 'Admin'),
         ('Worker', 'Worker'),
@@ -61,7 +74,8 @@ class UserInfo(models.Model):
             org_name = self.dsp.name
         elif self.Organization == 'APC':
             org_name = self.apc.name
-        
+        elif self.Organization == 'Court':
+            org_name = self.court.name
         return f'{self.user.username} - {self.role} - {self.Organization} - {org_name}'
     
     def get_organization(self):
@@ -71,6 +85,8 @@ class UserInfo(models.Model):
             return self.dsp
         elif self.Organization == 'APC':
             return self.apc
+        elif self.Organization == 'Court':
+            return self.court
         else:
             return None
 

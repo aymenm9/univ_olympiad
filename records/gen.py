@@ -15,7 +15,7 @@ def generate(deths)->str:
     text = ''
     for death in deths:
         text += f"""
-        [date_of_birth:{death.date_of_birth}, place_of_birth:{death.place_of_birth}, date_of_death:{death.date_of_deth}, cause_of_death:{death.death_cause}],
+        [birth date:{death.birth_date}, birth place:{death.birth_wilaya}, {death.birth_commune}, death date:{death.death_date}, death place:{death.death_wilaya}, {death.death_commune}, death cause:{death.death_cause}, Description:{death.description}],
         """
     contents = [
         types.Content(

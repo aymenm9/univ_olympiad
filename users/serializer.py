@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import UserInfo, Hospital, APC, DSP
+from .models import UserInfo, Hospital, APC, DSP, Court
 
 
 class hospitalSerializer(serializers.ModelSerializer):
@@ -33,6 +33,17 @@ class DSPSerializer(serializers.ModelSerializer):
             'id': {'read_only': True},
         }
 
+class CourtSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Court
+        fields = '__all__'
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'dsp': {'read_only': True},
+            'wilaya': {'read_only': True},
+ 
+        }
+
 class admin_info(serializers.Serializer):
     username=serializers.CharField()
     password=serializers.CharField()
@@ -42,6 +53,10 @@ class CreateAPCSerializer(serializers.Serializer):
 
 class CreateHospitalSerializer(serializers.Serializer):
     hospital = hospitalSerializer()
+    admin = admin_info()
+
+class CreateCourtSerializer(serializers.Serializer):
+    court = CourtSerializer()
     admin = admin_info()
 
 

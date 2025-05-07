@@ -7,12 +7,13 @@ from .models import User
 from .serializer import (UserSerializer, LoginSerializer,
                         CreateHospitalSerializer, hospitalSerializer, 
                         chatHistorySerializer, ChangePasswordSerializer,
-                        CreateAPCSerializer, APCSerializer)
+                        CreateAPCSerializer, APCSerializer,
+                        CourtSerializer, CreateCourtSerializer)
 from rest_framework_simplejwt.tokens import RefreshToken
 from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
-from .users_permissions import IsDSP, IsAdmin, IsDSP_APC, IsWorker
-from .models import Hospital, UserInfo, APC, DSP
+from .users_permissions import IsDSP, IsAdmin, IsDSP_APC, IsWorker, IsDSP_Court
+from .models import Hospital, UserInfo, APC, DSP, Court
 from django.contrib.auth.models import User
 from .chat_bot import chatbot
 from .models import ChatHistory
@@ -209,6 +210,56 @@ class APCView(generics.ListAPIView):
         elif self.request.user.info.Organization == 'DSP':
             return super().get_queryset().filter(dsp=self.request.user.info.dsp)
 
+
+class CreateCourtView():
+    permission_classes = [IsAuthenticated, IsDSP, IsAdmin]
+    
+    @extend_schema(
+        request=CreateCourtSerializer,
+        responses={201: CourtSerializer},
+    )
+    def post(self, request):
+        serializer = CreateCourtSerializer(data=request.data)
+        if serializer.is_valid():
+            court_info = serializer.validated_data['apc']
+            court = Court.objects.create(
+                name=court_info['name'],
+                wilaya=request.user.info.dsp.wilaya,
+                address=court_info['address'],
+                phone_number=court_info['phone_number'],
+                email=court_info['email'],
+                dsp=request.user.info.dsp
+            )
+            admin = User.objects.create_user(
+                username=serializer.validated_data['admin']['username'],
+                password=serializer.validated_data['admin']['password'],
+                first_name=court_info['name'],
+                last_name='Admin',
+                email=court_info['email']
+            )
+            user_info = UserInfo.objects.create(
+                user=admin,
+                Organization='APC',
+                court=court,
+                role='Admin'
+            )
+            court_serializer = CourtSerializer(court)
+            return Response(court_serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class CourtView(generics.ListAPIView):
+    queryset = Court.objects.all()
+    serializer_class = CourtSerializer
+    permission_classes = [IsAuthenticated, IsDSP_Court,IsWorker]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name', 'wilaya','phone_number','email'] 
+
+    def get_queryset(self):
+        if self.request.user.info.Organization == 'Court':
+            return super().get_queryset().filter(id=self.request.user.info.court.id)
+        elif self.request.user.info.Organization == 'DSP':
+            return super().get_queryset().filter(dsp=self.request.user.info.dsp)
 
 
 class ChatbotView(APIView):
