@@ -9,5 +9,7 @@ urlpatterns=[
     path('hospital_list/', views.HospitalView.as_view(), name='hospital_list'),
     path('apc/', views.CreateAPCView.as_view(), name='create_apc_and_his_admin'),
     path('apc_list/', views.APCView.as_view(), name='apc_list'),
+    path('court/', views.CreateCourtView.as_view(), name='create_court_and_his_admin'),
+    path('court_list/', views.CourtView.as_view(), name='court_list'),
     path('chatbot/', views.ChatbotView.as_view(), name='chatbot'),
 ]

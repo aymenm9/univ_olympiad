@@ -211,7 +211,7 @@ class APCView(generics.ListAPIView):
             return super().get_queryset().filter(dsp=self.request.user.info.dsp)
 
 
-class CreateCourtView():
+class CreateCourtView(APIView):
     permission_classes = [IsAuthenticated, IsDSP, IsAdmin]
     
     @extend_schema(
