@@ -192,7 +192,7 @@ class BirthCertificateView(generics.ListAPIView):
     search_fields = ['birth_number', 'first_name','last_name'] 
     
 
-class BirthCertificateDetailView(generics.RetrieveAPIView):
+class BirthCertificateDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated, IsWorker, IsDSP_APC]
     serializer_class = BirthCertificateSerializer
     queryset = BirthCertificate.objects.all()
@@ -246,7 +246,7 @@ class DeathCertificateView(generics.ListAPIView):
     filter_backends = [filters.SearchFilter]
     search_fields = ['birth_number', 'first_name','last_name','death_number'] 
 
-class DeathCertificateDetailView(generics.RetrieveAPIView):
+class DeathCertificateDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated, IsWorker, IsDSP_APC]
     serializer_class = DeathCertificateSerializer
     queryset = DeathCertificate.objects.all()
